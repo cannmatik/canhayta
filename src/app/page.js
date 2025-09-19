@@ -1,103 +1,215 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import Hero from "./components/hero";
+import BusinessIcon from "@mui/icons-material/Business";
+import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
+import WorkIcon from "@mui/icons-material/Work";
+import GavelIcon from "@mui/icons-material/Gavel";
+import BalanceIcon from "@mui/icons-material/Balance";
+import InfoIcon from "@mui/icons-material/Info";
+import ContactMailIcon from "@mui/icons-material/ContactMail";
+
+export default function HomePage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  // Renkler (JS sabitleri)
+  const baseColor = "#6B4E31";   // Hero başlığı ile aynı
+  const accentColor = "#D4A017"; // Hover vurgu rengi
+
+  // TS YOK: Normal JS nesneleri
+  const cardSx = {
+    maxWidth: 345,
+    mx: "auto",
+    backgroundColor: "#F5E8B7",
+    color: baseColor, // Yazılar/ikonlar default rengi
+    textAlign: "center",
+    borderRadius: 12,
+    p: 2.5,
+    boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
+    transition: "transform 220ms ease, box-shadow 220ms ease",
+    cursor: "pointer",
+    "&:hover": {
+      transform: "translateY(-6px)",
+      boxShadow: "0 14px 32px rgba(107,78,49,0.22)",
+    },
+    "&:hover svg": {
+      color: accentColor,
+      transform: "scale(1.06)",
+    },
+  };
+
+  const iconSx = {
+    fontSize: 60,
+    mb: 2,
+    color: baseColor,
+    transition: "color 200ms ease, transform 200ms ease",
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <Box component="main" sx={{ width: "100%", overflowX: "hidden" }}>
+      <Hero />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* Arka planlı bölüm tam genişlik */}
+      <Box sx={{ width: "100%", bgcolor: "#FDF6E3" }}>
+        <Container
+          maxWidth={false}
+          disableGutters
+          sx={{
+            py: isMobile ? 4 : 8,
+            px: 0,
+            mx: 0,
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            variant={isMobile ? "h5" : "h4"}
+            align="center"
+            gutterBottom
+            color={baseColor}
+            sx={{ mx: "auto", maxWidth: "90%" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Hizmetlerimiz
+          </Typography>
+
+          <Grid
+            container
+            spacing={isMobile ? 2 : 4}
+            sx={{ mt: isMobile ? 2 : 4, justifyContent: "center", width: "100%", m: 0 }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={cardSx}>
+                <CardContent>
+                  <BusinessIcon sx={iconSx} />
+                  <Typography gutterBottom variant="h5" component="div">
+                    Ticaret Hukuku
+                  </Typography>
+                  <Typography variant="body2">
+                    Uzman kadromuzla ticari anlaşmazlıklarınızı çözüyoruz.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={cardSx}>
+                <CardContent>
+                  <FamilyRestroomIcon sx={iconSx} />
+                  <Typography gutterBottom variant="h5" component="div">
+                    Aile Hukuku
+                  </Typography>
+                  <Typography variant="body2">
+                    Ailevi konularda profesyonel destek sunuyoruz.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={cardSx}>
+                <CardContent>
+                  <WorkIcon sx={iconSx} />
+                  <Typography gutterBottom variant="h5" component="div">
+                    İş Hukuku
+                  </Typography>
+                  <Typography variant="body2">
+                    İşçi-işveren uyuşmazlıklarında yanınızdayız.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={cardSx}>
+                <CardContent>
+                  <GavelIcon sx={iconSx} />
+                  <Typography gutterBottom variant="h5" component="div">
+                    Ceza Hukuku
+                  </Typography>
+                  <Typography variant="body2">
+                    Ceza davalarında güçlü savunma sağlıyoruz.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={cardSx}>
+                <CardContent>
+                  <BalanceIcon sx={iconSx} />
+                  <Typography gutterBottom variant="h5" component="div">
+                    Miras Hukuku
+                  </Typography>
+                  <Typography variant="body2">
+                    Miras davalarında adil çözümler sunuyoruz.
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: isMobile ? 4 : 8, textAlign: "center" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              gutterBottom
+              color={baseColor}
+              sx={{ mx: "auto", maxWidth: "90%" }}
+            >
+              Hakkımızda
+            </Typography>
+            <Typography variant="body1" color="text.secondary" maxWidth="md" sx={{ mx: "auto" }}>
+              Av. Can Hayta liderliğinde, 10 yılı aşkın deneyimle hukuki çözümler sunuyoruz.
+              Müşteri memnuniyeti ve güven ilkemizdir.
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{
+                mt: 4,
+                backgroundColor: baseColor,
+                "&:hover": { backgroundColor: accentColor },
+              }}
+              href="/about"
+              startIcon={<InfoIcon />}
+            >
+              Daha Fazla Bilgi
+            </Button>
+          </Box>
+
+          <Box sx={{ mt: isMobile ? 4 : 8, textAlign: "center" }}>
+            <Typography
+              variant={isMobile ? "h5" : "h4"}
+              gutterBottom
+              color={baseColor}
+              sx={{ mx: "auto", maxWidth: "90%" }}
+            >
+              İletişim
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<ContactMailIcon />}
+              sx={{
+                mt: 2,
+                backgroundColor: baseColor,
+                "&:hover": { backgroundColor: accentColor },
+              }}
+              href="/contact"
+            >
+              Bize Ulaşın
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   );
 }
