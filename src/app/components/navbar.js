@@ -1,9 +1,17 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+
+  const navItems = [
+    { title: "Ana Sayfa", href: "/" },
+    { title: "Hakkımızda", href: "/about" },
+    { title: "Hizmetler", href: "/services" },
+    { title: "İletişim", href: "/contact" },
+  ];
 
   return (
     <nav className="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-md">
@@ -16,10 +24,11 @@ export default function Navbar() {
 
           {/* Menü (Desktop) */}
           <div className="hidden md:flex md:space-x-8 items-center">
-            <a href="/" className="text-black hover:text-[--primary-gold]">Ana Sayfa</a>
-            <a href="/about" className="text-black hover:text-[--primary-gold]">Hakkımızda</a>
-            <a href="/services" className="text-black hover:text-[--primary-gold]">Hizmetler</a>
-            <a href="/contact" className="text-black hover:text-[--primary-gold]">İletişim</a>
+            {navItems.map((item, idx) => (
+              <Link key={idx} href={item.href} className="text-black hover:text-[--primary-gold]">
+                {item.title}
+              </Link>
+            ))}
           </div>
 
           {/* Hamburger Menü (Mobile) */}
@@ -50,10 +59,16 @@ export default function Navbar() {
       {/* Mobil menü */}
       {open && (
         <div className="md:hidden bg-white/90 py-4 space-y-2 text-center">
-          <a href="/" className="block text-black hover:text-[--primary-gold] py-2">Ana Sayfa</a>
-          <a href="/about" className="block text-black hover:text-[--primary-gold] py-2">Hakkımızda</a>
-          <a href="/services" className="block text-black hover:text-[--primary-gold] py-2">Hizmetler</a>
-          <a href="/contact" className="block text-black hover:text-[--primary-gold] py-2">İletişim</a>
+          {navItems.map((item, idx) => (
+            <Link
+              key={idx}
+              href={item.href}
+              className="block text-black hover:text-[--primary-gold] py-2"
+              onClick={() => setOpen(false)} // Menü açıldıktan sonra kapat
+            >
+              {item.title}
+            </Link>
+          ))}
         </div>
       )}
     </nav>
