@@ -1,0 +1,9 @@
+/* src/styles/react-pdf.css */
+.react-pdf__Page__annotations {
+  pointer-events: none;
+}
+
+.react-pdf__Page__textContent {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}

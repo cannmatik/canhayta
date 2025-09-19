@@ -10,6 +10,7 @@ export default function Navbar() {
     { title: "Ana Sayfa", href: "/" },
     { title: "Hakkımızda", href: "/about" },
     { title: "Hizmetler", href: "/services" },
+    { title: "Makaleler", href: "/makaleler" },
     { title: "İletişim", href: "/contact" },
   ];
 
