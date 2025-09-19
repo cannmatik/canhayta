@@ -10,11 +10,10 @@ import {
   useTheme,
   IconButton,
   CircularProgress,
-  Paper,
-  Dialog,
   Button,
+  Dialog,
 } from "@mui/material";
-import { Fullscreen, FullscreenExit, ArrowBack, ArrowForward } from "@mui/icons-material";
+import { FullscreenExit, ArrowBack, ArrowForward, PictureAsPdf, Palette } from "@mui/icons-material";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
 
@@ -22,14 +21,20 @@ export default function MakaleGoruntuleClient() {
   const params = useParams();
   const seo_slug = params?.seo_slug;
   const router = useRouter();
+
   const [makale, setMakale] = useState(null);
-  const [allMakaleler, setAllMakaleler] = useState([]); // Tüm makaleler için
-  const [currentIndex, setCurrentIndex] = useState(-1); // Mevcut makale indeksi
+  const [allMakaleler, setAllMakaleler] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [typedText, setTypedText] = useState(""); // Daktilo efekti için state
-  const [charIndex, setCharIndex] = useState(0); // Yazılan karakter indeksi
+  const [typedText, setTypedText] = useState("");
+  const [charIndex, setCharIndex] = useState(0);
+
+  // Tema / yazı ayarları
+  const [fontColor, setFontColor] = useState("#6B4E31");
+  const [bgColor, setBgColor] = useState("#FDF6E3");
+  const [fontSize, setFontSize] = useState("1.125rem");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -39,7 +44,6 @@ export default function MakaleGoruntuleClient() {
     setIsClient(true);
   }, []);
 
-  // Tüm makaleleri ve mevcut makaleyi çek
   useEffect(() => {
     let mounted = true;
 
@@ -48,10 +52,8 @@ export default function MakaleGoruntuleClient() {
         const { data: allData, error: allError } = await supabase
           .from("Makaleler")
           .select(
-            `
-            id, baslik, ozet, kapak_resmi_url, bucket_dosya_url,
-            yayim_tarihi, seo_slug, makale_turleri ("Tur"), yazarlar (ad, soyad)
-            `
+            `id, baslik, ozet, icerik_html, kapak_resmi_url, bucket_dosya_url,
+             yayim_tarihi, seo_slug, makale_turleri ("Tur"), yazarlar (ad, soyad)`
           )
           .order("yayim_tarihi", { ascending: false });
 
@@ -72,25 +74,20 @@ export default function MakaleGoruntuleClient() {
       }
     };
 
-    if (seo_slug) {
-      fetchMakaleler();
-    }
-
+    if (seo_slug) fetchMakaleler();
     return () => (mounted = false);
   }, [seo_slug]);
 
-  // Daktilo efekti için useEffect
   useEffect(() => {
     if (makale?.ozet && charIndex < makale.ozet.length) {
       const timer = setTimeout(() => {
         setTypedText((prev) => prev + makale.ozet[charIndex]);
         setCharIndex((prev) => prev + 1);
-      }, 50); // Her karakter için 50ms gecikme
+      }, 50);
       return () => clearTimeout(timer);
     }
   }, [makale, charIndex]);
 
-  // Önceki/Sonraki makaleye geçiş
   const goToPrevious = () => {
     if (currentIndex > 0) {
       const prevMakale = allMakaleler[currentIndex - 1];
@@ -105,13 +102,21 @@ export default function MakaleGoruntuleClient() {
     }
   };
 
-  if (!isClient) {
-    return null;
-  }
+  const toggleTheme = () => {
+    if (bgColor === "#FDF6E3") {
+      setBgColor("#333");
+      setFontColor("#f5f5f5");
+    } else {
+      setBgColor("#FDF6E3");
+      setFontColor("#6B4E31");
+    }
+  };
+
+  if (!isClient) return null;
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh", pt: 20 }}> {/* Navbar padding */}
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh", pt: 16 }}>
         <CircularProgress sx={{ color: baseColor }} />
       </Box>
     );
@@ -119,7 +124,7 @@ export default function MakaleGoruntuleClient() {
 
   if (!makale) {
     return (
-      <Box sx={{ textAlign: "center", py: 8, pt: 20 }}> {/* Navbar padding */}
+      <Box sx={{ textAlign: "center", py: 8, pt: 16 }}>
         <Typography variant="h6" color={baseColor}>
           Makale bulunamadı.
         </Typography>
@@ -128,53 +133,124 @@ export default function MakaleGoruntuleClient() {
   }
 
   return (
-    <Box sx={{ width: "100%", bgcolor: "#FDF6E3", minHeight: "100vh", pt: 20 }}> {/* Navbar padding */}
+    <Box
+      sx={{
+        width: "100%",
+        bgcolor: bgColor,
+        minHeight: "100vh",
+        pt: 0, // Navbar padding main layout’ta zaten var
+        color: fontColor,
+        transition: "all 0.3s",
+      }}
+    >
       <Container maxWidth="lg" sx={{ py: isMobile ? 4 : 8 }}>
+        {/* Tema Butonu navbarın altında */}
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4 }}>
+          <Button
+            variant="contained"
+            startIcon={<Palette />}
+            sx={{ bgcolor: baseColor, "&:hover": { bgcolor: "#5a3c26" } }}
+            onClick={toggleTheme}
+          >
+            Tema
+          </Button>
+        </Box>
+
+        {/* Başlık */}
         <Typography
           variant={isMobile ? "h5" : "h4"}
           component="h1"
-          color={baseColor}
-          sx={{ mb: 4, textAlign: "center", fontWeight: "bold" }}
+          sx={{ mb: 4, textAlign: "center", fontWeight: "bold", color: fontColor }}
         >
           {makale.baslik}
         </Typography>
 
-        <Grid container spacing={4} alignItems="center">
+        <Grid container spacing={4} alignItems="flex-start">
           {makale.kapak_resmi_url && (
             <Grid item xs={12} md={4}>
               <Box
-                component="img"
-                src={makale.kapak_resmi_url}
-                alt={makale.baslik}
                 sx={{
-                  width: "100%",
-                  height: "auto",
+                  width: 300,
+                  height: 300,
                   borderRadius: 2,
+                  border: `1px solid ${baseColor}40`,
+                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "white",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                 }}
-              />
+              >
+                <Box
+                  component="img"
+                  src={makale.kapak_resmi_url}
+                  alt={makale.baslik}
+                  sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              </Box>
             </Grid>
           )}
 
-          {makale.ozet && (
-            <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={makale.kapak_resmi_url ? 8 : 12}>
+            {makale.ozet && (
               <Typography
                 variant="body1"
-                color="text.secondary"
                 sx={{
                   textAlign: "justify",
                   lineHeight: 1.7,
-                  whiteSpace: "pre-wrap", // Daktilo efekti için metnin formatını korur
+                  whiteSpace: "pre-wrap",
+                  mb: 2,
+                  fontSize: fontSize,
+                  color: fontColor,
                 }}
               >
                 {typedText}
-                <span style={{ borderRight: "2px solid", animation: "blink 0.75s step-end infinite" }} />
+                <span
+                  style={{
+                    borderRight: "2px solid",
+                    animation: "blink 0.75s step-end infinite",
+                    color: fontColor,
+                  }}
+                />
               </Typography>
-            </Grid>
-          )}
+            )}
+
+            {makale.icerik_html && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 3,
+                  bgcolor: bgColor,
+                  borderRadius: 2,
+                  border: `1px solid ${baseColor}40`,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                  transition: "all 0.3s",
+                  "& *": {
+                    color: fontColor + " !important",
+                    fontSize: fontSize,
+                  },
+                }}
+                dangerouslySetInnerHTML={{ __html: makale.icerik_html }}
+              />
+            )}
+
+            {makale.bucket_dosya_url && (
+              <Box sx={{ mt: 4, textAlign: "center" }}>
+                <Button
+                  variant="contained"
+                  startIcon={<PictureAsPdf />}
+                  sx={{ bgcolor: baseColor, "&:hover": { bgcolor: "#5a3c26" } }}
+                  onClick={() => setFullscreen(true)}
+                >
+                  PDF Görüntüle
+                </Button>
+              </Box>
+            )}
+          </Grid>
         </Grid>
 
-        {/* Navigasyon Okları */}
+        {/* Navigasyon */}
         {(currentIndex > 0 || currentIndex < allMakaleler.length - 1) && (
           <Box sx={{ mt: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <IconButton
@@ -196,92 +272,35 @@ export default function MakaleGoruntuleClient() {
             </IconButton>
           </Box>
         )}
-
-        {makale.bucket_dosya_url && (
-          <Box sx={{ mt: 6 }}>
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 2, 
-                backgroundColor: 'transparent',
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                position: 'relative'
-              }}
-            >
-              <IconButton 
-                onClick={() => setFullscreen(true)}
-                sx={{ 
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  zIndex: 10,
-                  backgroundColor: 'rgba(255,255,255,0.9)',
-                  '&:hover': {
-                    backgroundColor: 'white',
-                  },
-                }}
-              >
-                <Fullscreen />
-              </IconButton>
-              
-              <Box sx={{ 
-                width: '100%', 
-                height: '70vh',
-                border: 'none'
-              }}>
-                <iframe
-                  src={makale.bucket_dosya_url}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 'none' }}
-                  title="PDF Görüntüleyici"
-                />
-              </Box>
-              
-              <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-                PDF'i tam ekranda görüntülemek için yukarıdaki butonu kullanın
-              </Typography>
-            </Paper>
-          </Box>
-        )}
       </Container>
 
-      {/* Tam Ekran PDF Görüntüleyici */}
+      {/* PDF Popup */}
       <Dialog
         open={fullscreen}
         onClose={() => setFullscreen(false)}
         fullScreen
-        sx={{
-          '& .MuiDialog-paper': {
-            overflow: 'hidden',
-            backgroundColor: '#f5f5f5',
-          },
-        }}
+        sx={{ "& .MuiDialog-paper": { overflow: "hidden", backgroundColor: "#f5f5f5" } }}
       >
-        <Box sx={{ position: 'relative', height: '100vh' }}>
-          <IconButton 
+        <Box sx={{ position: "relative", height: "100vh" }}>
+          <IconButton
             onClick={() => setFullscreen(false)}
-            sx={{ 
-              position: 'absolute',
+            sx={{
+              position: "absolute",
               top: 16,
               right: 16,
               zIndex: 10,
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              '&:hover': {
-                backgroundColor: 'white',
-              },
+              backgroundColor: "rgba(255,255,255,0.9)",
+              "&:hover": { backgroundColor: "white" },
             }}
           >
             <FullscreenExit />
           </IconButton>
-          
+
           <iframe
             src={makale.bucket_dosya_url}
             width="100%"
             height="100%"
-            style={{ border: 'none' }}
+            style={{ border: "none" }}
             title="PDF Görüntüleyici (Tam Ekran)"
           />
         </Box>

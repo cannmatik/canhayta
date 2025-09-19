@@ -5,13 +5,8 @@
   --foreground: #171717;
   --primary-gold: #D4A017;
   --secondary-brown: #6B4E31;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: "Montserrat", Arial, Helvetica, sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-mono: ui-monospace, Menlo, Monaco, "Cascadia Code", "Roboto Mono", "Liberation Mono", "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,8 +16,24 @@
   }
 }
 
-body {
+html, body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  margin: 0; /* Varsayılan margin'leri sıfırla */
+  padding: 0; /* Varsayılan padding'leri sıfırla */
+  height: 100%; /* Tam ekran kapsama */
+}
+
+/* Navbar için özel stil */
+nav {
+  background-color: #ffffff; /* Tamamen opak beyaz */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+}
+
+/* Mobil menü için stil */
+@media (max-width: 767px) {
+  .mobile-menu {
+    background-color: #ffffff; /* Tamamen opak beyaz */
+  }
 }
