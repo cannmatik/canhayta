@@ -60,31 +60,57 @@ export default function AdminPage() {
           Hoş geldin, <strong>{user.email}</strong>
         </Typography>
 
-        <Grid container spacing={4} justifyContent="center">
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/makale-ekle")}>
-              <AddCircleIcon sx={iconStyle} />
-              <Typography variant="h6" gutterBottom>
-                Makale Ekle
-              </Typography>
-              <Typography variant="body2">
-                Yeni makaleler oluştur ve siteye ekle.
-              </Typography>
-            </Card>
-          </Grid>
+<Grid container spacing={4} justifyContent="center">
+  <Grid item xs={12} sm={6}>
+    <Card sx={cardStyle} onClick={() => router.push("/admin/makale-ekle")}>
+      <AddCircleIcon sx={iconStyle} />
+      <Typography variant="h6" gutterBottom>
+        Makale Ekle
+      </Typography>
+      <Typography variant="body2">
+        Yeni makaleler oluştur ve siteye ekle.
+      </Typography>
+    </Card>
+  </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/makaleler")}>
-              <ArticleIcon sx={iconStyle} />
-              <Typography variant="h6" gutterBottom>
-                Tüm Makaleler
-              </Typography>
-              <Typography variant="body2">
-                Mevcut makaleleri görüntüle ve düzenle.
-              </Typography>
-            </Card>
-          </Grid>
-        </Grid>
+  <Grid item xs={12} sm={6}>
+    <Card sx={cardStyle} onClick={() => router.push("/admin/makaleler")}>
+      <ArticleIcon sx={iconStyle} />
+      <Typography variant="h6" gutterBottom>
+        Tüm Makaleler
+      </Typography>
+      <Typography variant="body2">
+        Mevcut makaleleri görüntüle ve düzenle.
+      </Typography>
+    </Card>
+  </Grid>
+
+  <Grid item xs={12} sm={6}>
+    <Card sx={cardStyle} onClick={() => router.push("/admin/hakkinda")}>
+      <ArticleIcon sx={iconStyle} />
+      <Typography variant="h6" gutterBottom>
+        Hakkında Sayfası
+      </Typography>
+      <Typography variant="body2">
+        Site hakkında içeriği görüntüle ve düzenle.
+      </Typography>
+    </Card>
+  </Grid>
+
+  {/* Yeni Contact Butonu */}
+  <Grid item xs={12} sm={6}>
+    <Card sx={cardStyle} onClick={() => router.push("/admin/contact")}>
+      <ArticleIcon sx={iconStyle} />
+      <Typography variant="h6" gutterBottom>
+        Contact Sayfası
+      </Typography>
+      <Typography variant="body2">
+        İletişim sayfası içeriğini görüntüle ve düzenle.
+      </Typography>
+    </Card>
+  </Grid>
+</Grid>
+
       </Container>
     </Box>
   );
