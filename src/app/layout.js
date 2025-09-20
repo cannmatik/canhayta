@@ -12,6 +12,9 @@ const montserrat = Montserrat({
 export const metadata = {
   title: "Hayta Hukuk ve Danışmanlık",
   description: "Hukuk danışmanlığı ve avukatlık hizmetleri",
+  icons: {
+    icon: "/favicon.ico", // favicon burada tanımlandı
+  },
 };
 
 export default function RootLayout({ children }) {
