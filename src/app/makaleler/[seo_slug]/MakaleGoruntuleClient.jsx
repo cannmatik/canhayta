@@ -12,10 +12,21 @@ import {
   CircularProgress,
   Button,
   Dialog,
+  Fade,
 } from "@mui/material";
-import { FullscreenExit, ArrowBack, ArrowForward, PictureAsPdf, Palette } from "@mui/icons-material";
+import {
+  FullscreenExit,
+  ArrowBack,
+  ArrowForward,
+  PictureAsPdf,
+  Palette,
+  Close,
+  ArrowBackIos,
+} from "@mui/icons-material";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
+import Typewriter from "typewriter-effect";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MakaleGoruntuleClient() {
   const params = useParams();
@@ -28,10 +39,8 @@ export default function MakaleGoruntuleClient() {
   const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
-  const [typedText, setTypedText] = useState("");
-  const [charIndex, setCharIndex] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
 
-  // Tema / yazı ayarları
   const [fontColor, setFontColor] = useState("#6B4E31");
   const [bgColor, setBgColor] = useState("#FDF6E3");
   const [fontSize, setFontSize] = useState("1.125rem");
@@ -40,24 +49,20 @@ export default function MakaleGoruntuleClient() {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const baseColor = "#6B4E31";
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
   useEffect(() => {
     let mounted = true;
-
     const fetchMakaleler = async () => {
       try {
-        const { data: allData, error: allError } = await supabase
+        const { data: allData, error } = await supabase
           .from("Makaleler")
           .select(
             `id, baslik, ozet, icerik_html, kapak_resmi_url, bucket_dosya_url,
              yayim_tarihi, seo_slug, makale_turleri ("Tur"), yazarlar (ad, soyad)`
           )
           .order("yayim_tarihi", { ascending: false });
-
-        if (allError) throw allError;
+        if (error) throw error;
 
         if (mounted) {
           setAllMakaleler(allData || []);
@@ -78,27 +83,32 @@ export default function MakaleGoruntuleClient() {
     return () => (mounted = false);
   }, [seo_slug]);
 
-  useEffect(() => {
-    if (makale?.ozet && charIndex < makale.ozet.length) {
-      const timer = setTimeout(() => {
-        setTypedText((prev) => prev + makale.ozet[charIndex]);
-        setCharIndex((prev) => prev + 1);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [makale, charIndex]);
+  const handleBack = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      router.push("/makaleler");
+    }, 300); // Animasyon süresi ile aynı olmalı
+  };
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      const prevMakale = allMakaleler[currentIndex - 1];
-      router.push(`/makaleler/${prevMakale.seo_slug}`);
+      setIsExiting(true);
+      setTimeout(() => {
+        const prevMakale = allMakaleler[currentIndex - 1];
+        router.push(`/makaleler/${prevMakale.seo_slug}`);
+        setIsExiting(false);
+      }, 300);
     }
   };
 
   const goToNext = () => {
     if (currentIndex < allMakaleler.length - 1) {
-      const nextMakale = allMakaleler[currentIndex + 1];
-      router.push(`/makaleler/${nextMakale.seo_slug}`);
+      setIsExiting(true);
+      setTimeout(() => {
+        const nextMakale = allMakaleler[currentIndex + 1];
+        router.push(`/makaleler/${nextMakale.seo_slug}`);
+        setIsExiting(false);
+      }, 300);
     }
   };
 
@@ -116,7 +126,15 @@ export default function MakaleGoruntuleClient() {
 
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh", pt: 16 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "50vh",
+          pt: 16,
+        }}
+      >
         <CircularProgress sx={{ color: baseColor }} />
       </Box>
     );
@@ -124,7 +142,7 @@ export default function MakaleGoruntuleClient() {
 
   if (!makale) {
     return (
-      <Box sx={{ textAlign: "center", py: 8, pt: 16 }}>
+      <Box sx={{ textAlign: "center", py: 8 }}>
         <Typography variant="h6" color={baseColor}>
           Makale bulunamadı.
         </Typography>
@@ -133,178 +151,280 @@ export default function MakaleGoruntuleClient() {
   }
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        bgcolor: bgColor,
-        minHeight: "100vh",
-        pt: 0, // Navbar padding main layout’ta zaten var
-        color: fontColor,
-        transition: "all 0.3s",
-      }}
-    >
-      <Container maxWidth="lg" sx={{ py: isMobile ? 4 : 8 }}>
-        {/* Tema Butonu navbarın altında */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 4 }}>
-          <Button
-            variant="contained"
-            startIcon={<Palette />}
-            sx={{ bgcolor: baseColor, "&:hover": { bgcolor: "#5a3c26" } }}
-            onClick={toggleTheme}
-          >
-            Tema
-          </Button>
-        </Box>
-
-        {/* Başlık */}
-        <Typography
-          variant={isMobile ? "h5" : "h4"}
-          component="h1"
-          sx={{ mb: 4, textAlign: "center", fontWeight: "bold", color: fontColor }}
+    <AnimatePresence mode="wait">
+      {!isExiting && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          {makale.baslik}
-        </Typography>
-
-        <Grid container spacing={4} alignItems="flex-start">
-          {makale.kapak_resmi_url && (
-            <Grid item xs={12} md={4}>
-              <Box
-                sx={{
-                  width: 300,
-                  height: 300,
-                  borderRadius: 2,
-                  border: `1px solid ${baseColor}40`,
-                  overflow: "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "white",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                }}
-              >
-                <Box
-                  component="img"
-                  src={makale.kapak_resmi_url}
-                  alt={makale.baslik}
-                  sx={{ width: "100%", height: "100%", objectFit: "contain" }}
-                />
-              </Box>
-            </Grid>
-          )}
-
-          <Grid item xs={12} md={makale.kapak_resmi_url ? 8 : 12}>
-            {makale.ozet && (
-              <Typography
-                variant="body1"
-                sx={{
-                  textAlign: "justify",
-                  lineHeight: 1.7,
-                  whiteSpace: "pre-wrap",
-                  mb: 2,
-                  fontSize: fontSize,
-                  color: fontColor,
-                }}
-              >
-                {typedText}
-                <span
-                  style={{
-                    borderRight: "2px solid",
-                    animation: "blink 0.75s step-end infinite",
-                    color: fontColor,
-                  }}
-                />
-              </Typography>
-            )}
-
-            {makale.icerik_html && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: 3,
-                  bgcolor: bgColor,
-                  borderRadius: 2,
-                  border: `1px solid ${baseColor}40`,
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
-                  transition: "all 0.3s",
-                  "& *": {
-                    color: fontColor + " !important",
-                    fontSize: fontSize,
-                  },
-                }}
-                dangerouslySetInnerHTML={{ __html: makale.icerik_html }}
-              />
-            )}
-
-            {makale.bucket_dosya_url && (
-              <Box sx={{ mt: 4, textAlign: "center" }}>
-                <Button
-                  variant="contained"
-                  startIcon={<PictureAsPdf />}
-                  sx={{ bgcolor: baseColor, "&:hover": { bgcolor: "#5a3c26" } }}
-                  onClick={() => setFullscreen(true)}
-                >
-                  PDF Görüntüle
-                </Button>
-              </Box>
-            )}
-          </Grid>
-        </Grid>
-
-        {/* Navigasyon */}
-        {(currentIndex > 0 || currentIndex < allMakaleler.length - 1) && (
-          <Box sx={{ mt: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <IconButton
-              onClick={goToPrevious}
-              disabled={currentIndex === 0}
-              sx={{ color: baseColor, "&:disabled": { color: "text.disabled" } }}
-            >
-              <ArrowBack />
-            </IconButton>
-            <Typography variant="body2" color="text.secondary">
-              {currentIndex + 1} / {allMakaleler.length}
-            </Typography>
-            <IconButton
-              onClick={goToNext}
-              disabled={currentIndex === allMakaleler.length - 1}
-              sx={{ color: baseColor, "&:disabled": { color: "text.disabled" } }}
-            >
-              <ArrowForward />
-            </IconButton>
-          </Box>
-        )}
-      </Container>
-
-      {/* PDF Popup */}
-      <Dialog
-        open={fullscreen}
-        onClose={() => setFullscreen(false)}
-        fullScreen
-        sx={{ "& .MuiDialog-paper": { overflow: "hidden", backgroundColor: "#f5f5f5" } }}
-      >
-        <Box sx={{ position: "relative", height: "100vh" }}>
-          <IconButton
-            onClick={() => setFullscreen(false)}
+          <Box
             sx={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              zIndex: 10,
-              backgroundColor: "rgba(255,255,255,0.9)",
-              "&:hover": { backgroundColor: "white" },
+              width: "100%",
+              bgcolor: bgColor,
+              minHeight: "100vh",
+              pt: 4,
+              pb: 8,
+              color: fontColor,
+              transition: "all 0.3s",
             }}
           >
-            <FullscreenExit />
-          </IconButton>
+            <Container maxWidth="lg" sx={{ px: 2 }}>
+              {/* Geri Dön ve Tema Butonları */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: { xs: 2, md: 4 },
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  startIcon={<ArrowBackIos />}
+                  sx={{
+                    color: baseColor,
+                    borderColor: baseColor,
+                    borderRadius: "999px",
+                    px: 3,
+                    "&:hover": {
+                      borderColor: baseColor,
+                      bgcolor: `${baseColor}10`,
+                    },
+                    fontSize: { xs: "0.8rem", md: "1rem" },
+                  }}
+                  onClick={handleBack}
+                >
+                  Geri Dön
+                </Button>
 
-          <iframe
-            src={makale.bucket_dosya_url}
-            width="100%"
-            height="100%"
-            style={{ border: "none" }}
-            title="PDF Görüntüleyici (Tam Ekran)"
-          />
-        </Box>
-      </Dialog>
-    </Box>
+                <Button
+                  variant="contained"
+                  startIcon={<Palette />}
+                  sx={{
+                    bgcolor: baseColor,
+                    borderRadius: "999px",
+                    px: 3,
+                    "&:hover": { bgcolor: "#5a3c26" },
+                    fontSize: { xs: "0.8rem", md: "1rem" },
+                  }}
+                  onClick={toggleTheme}
+                >
+                  Tema
+                </Button>
+              </Box>
+
+              {/* Başlık */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.3 }}
+              >
+                <Typography
+                  variant={isMobile ? "h5" : "h4"}
+                  component="h1"
+                  sx={{
+                    mb: 4,
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    color: fontColor,
+                  }}
+                >
+                  {makale.baslik}
+                </Typography>
+              </motion.div>
+
+              <Grid container spacing={4} alignItems="flex-start">
+                {/* Kapak Resmi */}
+                {makale.kapak_resmi_url && (
+                  <Grid
+                    item
+                    xs={12}
+                    md={4}
+                    sx={{
+                      display: "flex",
+                      justifyContent: { xs: "center", md: "flex-start" },
+                      mb: { xs: 2, md: 0 },
+                    }}
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                    >
+                      <Box
+                        sx={{
+                          width: 300,
+                          height: 300,
+                          borderRadius: 2,
+                          border: `1px solid ${baseColor}40`,
+                          overflow: "hidden",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          bgcolor: "white",
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={makale.kapak_resmi_url}
+                          alt={makale.baslik}
+                          sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+                        />
+                      </Box>
+                    </motion.div>
+                  </Grid>
+                )}
+
+                {/* İçerik */}
+                <Grid
+                  item
+                  xs={12}
+                  md={makale.kapak_resmi_url ? 8 : 12}
+                  sx={{
+                    maxWidth: {
+                      md: makale.kapak_resmi_url
+                        ? `calc(100% - 300px - 32px)`
+                        : "100%",
+                    },
+                  }}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.3 }}
+                  >
+                    {/* Özet */}
+                    {makale.ozet && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typewriter
+                          onInit={(typewriter) => {
+                            typewriter.typeString(makale.ozet).start();
+                          }}
+                          options={{
+                            delay: 15,
+                            autoStart: true,
+                            loop: false,
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    {/* HTML içerik */}
+                    {makale.icerik_html && (
+                      <Box
+                        sx={{
+                          mt: 2,
+                          p: 3,
+                          bgcolor: bgColor,
+                          borderRadius: 2,
+                          border: `1px solid ${baseColor}40`,
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+                          transition: "all 0.3s",
+                          "& *": {
+                            color: fontColor + " !important",
+                            fontSize: fontSize,
+                          },
+                        }}
+                        dangerouslySetInnerHTML={{ __html: makale.icerik_html }}
+                      />
+                    )}
+
+                    {/* PDF Butonu */}
+                    {makale.bucket_dosya_url && (
+                      <Box sx={{ mt: 4, textAlign: "center" }}>
+                        <Button
+                          variant="contained"
+                          startIcon={<PictureAsPdf />}
+                          sx={{ bgcolor: baseColor, "&:hover": { bgcolor: "#5a3c26" } }}
+                          onClick={() => setFullscreen(true)}
+                        >
+                          PDF Görüntüle
+                        </Button>
+                      </Box>
+                    )}
+                  </motion.div>
+                </Grid>
+              </Grid>
+
+              {/* Navigasyon */}
+              {(currentIndex > 0 || currentIndex < allMakaleler.length - 1) && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
+                >
+                  <Box
+                    sx={{
+                      mt: 4,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <IconButton
+                      onClick={goToPrevious}
+                      disabled={currentIndex === 0}
+                      sx={{ color: baseColor, "&:disabled": { color: "text.disabled" } }}
+                    >
+                      <ArrowBack />
+                    </IconButton>
+                    <Typography variant="body2" color="text.secondary">
+                      {currentIndex + 1} / {allMakaleler.length}
+                    </Typography>
+                    <IconButton
+                      onClick={goToNext}
+                      disabled={currentIndex === allMakaleler.length - 1}
+                      sx={{ color: baseColor, "&:disabled": { color: "text.disabled" } }}
+                    >
+                      <ArrowForward />
+                    </IconButton>
+                  </Box>
+                </motion.div>
+              )}
+            </Container>
+
+            {/* PDF Dialog */}
+            <Dialog
+              open={fullscreen}
+              onClose={() => setFullscreen(false)}
+              fullScreen
+              sx={{
+                "& .MuiDialog-paper": {
+                  overflow: "hidden",
+                  backgroundColor: "#f5f5f5",
+                },
+              }}
+            >
+              <Box sx={{ position: "relative", height: "100vh" }}>
+                <IconButton
+                  onClick={() => setFullscreen(false)}
+                  sx={{
+                    position: "absolute",
+                    top: 16,
+                    right: 16,
+                    zIndex: 10,
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    "&:hover": { backgroundColor: "white" },
+                  }}
+                >
+                  <Close />
+                </IconButton>
+
+                <iframe
+                  src={makale.bucket_dosya_url}
+                  width="100%"
+                  height="100%"
+                  style={{ border: "none" }}
+                  title="PDF Görüntüleyici (Tam Ekran)"
+                />
+              </Box>
+            </Dialog>
+          </Box>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

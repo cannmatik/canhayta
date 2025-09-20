@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -11,16 +11,46 @@ import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
 import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
-
-// v3: TextStyle, Color, FontFamily -> named export
-import { TextStyle, Color, FontFamily } from "@tiptap/extension-text-style";
-
-// Tiptap Core: kendi FontSize eklentimizi yazacağız
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { FontFamily } from "@tiptap/extension-font-family";
 import { Extension } from "@tiptap/core";
 
-/** ---- FontSize: TextStyle üzerine global attribute ekler ---- */
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Code,
+  Link as LinkIcon,
+  Unlink,
+  Quote,
+  List,
+  ListOrdered,
+  Minus,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Undo,
+  Redo,
+  Palette,
+  Highlighter,
+  Heading1,
+  Heading2,
+  Heading3,
+  Subscript as SubscriptIcon,
+  Superscript as SuperscriptIcon,
+  RemoveFormatting,
+  Pilcrow,
+} from "lucide-react";
+
+/**
+ * Font size extension with commands
+ */
 const FontSize = Extension.create({
   name: "fontSize",
+
   addGlobalAttributes() {
     return [
       {
@@ -29,135 +59,113 @@ const FontSize = Extension.create({
           fontSize: {
             default: null,
             parseHTML: (element) => {
-              const v = element.style.fontSize;
-              return v ? parseInt(v.replace("px", ""), 10) : null;
+              const size = element.style.fontSize;
+              return size ? parseInt(size.replace("px", ""), 10) : null;
             },
-            renderHTML: (attrs) => {
-              if (!attrs.fontSize) return {};
-              return { style: `font-size: ${attrs.fontSize}px` };
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) return {};
+              return { style: `font-size: ${attributes.fontSize}px` };
             },
           },
         },
       },
     ];
   },
+
+  addCommands() {
+    return {
+      setFontSize:
+        (size) =>
+        ({ chain }) => {
+          if (!size || isNaN(Number(size))) return true;
+          return chain().setMark("textStyle", { fontSize: Number(size) }).run();
+        },
+      unsetFontSize:
+        () =>
+        ({ chain }) => {
+          return chain()
+            .setMark("textStyle", { fontSize: null })
+            .removeEmptyTextStyle()
+            .run();
+        },
+    };
+  },
 });
 
+// Default heading sizes
+const headingSizes = {
+  1: 32,
+  2: 28,
+  3: 24,
+};
+
 export default function RichTextEditor({ initialHTML = "", onChange }) {
+  const [mounted, setMounted] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4, 5, 6] },
       }),
-      // Stil işaretleri ve özellikleri
       TextStyle,
       FontSize,
       FontFamily,
-      Color, // setColor / unsetColor komutları
+      Color,
       Underline,
-      Highlight,
+      Highlight.configure({ multicolor: true }),
       Subscript,
       Superscript,
-
-      // Hizalama
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-
-      // Link
       Link.configure({
         openOnClick: true,
         autolink: true,
         linkOnPaste: true,
+        HTMLAttributes: { class: "text-blue-600 underline" },
       }),
-
-      // Placeholder & Karakter sayacı
-      Placeholder.configure({
-        placeholder: "Buraya yazmaya başlayın…",
-      }),
+      Placeholder.configure({ placeholder: "Buraya yazmaya başlayın…" }),
       CharacterCount,
     ],
     content: initialHTML || "",
     editorProps: {
       attributes: {
         class:
-          "min-h-[240px] w-full p-3 focus:outline-none leading-7 prose prose-sm max-w-none text-black",
+          "prose prose-lg max-w-none min-h-[300px] p-4 focus:outline-none leading-relaxed text-black",
+        style: [
+          "--tw-prose-body: #000",
+          "--tw-prose-headings: #000",
+          "--tw-prose-lead: #000",
+          "--tw-prose-links: #1d4ed8", // linkler mavi kalsın
+          "--tw-prose-bold: #000",
+          "--tw-prose-counters: #000",
+          "--tw-prose-bullets: #000",
+          "--tw-prose-quotes: #000",
+          "--tw-prose-quote-borders: #000",
+          "--tw-prose-captions: #000",
+          "--tw-prose-code: #000",
+          "--tw-prose-pre-code: #000",
+          "--tw-prose-th-borders: #000",
+          "--tw-prose-td-borders: #000",
+        ].join("; "),
       },
     },
-    // Next.js ile SSR sorunlarını engelle
-    immediatelyRender: false, // v3 Next.js rehberi tavsiyesi
-    onUpdate({ editor }) {
-      onChange?.(editor.getHTML());
-    },
+    onUpdate: ({ editor }) => onChange?.(editor.getHTML()),
+    immediatelyRender: false,
   });
 
-  // Toolbar’ı seçim/transaction’larda tazeleyelim
-  const [, forceUpdate] = React.useState(0);
-  React.useEffect(() => {
-    if (!editor) return;
-    const rerender = () => forceUpdate((x) => x + 1);
-    editor.on("selectionUpdate", rerender);
-    editor.on("transaction", rerender);
-    editor.on("update", rerender);
-    return () => {
-      editor.off("selectionUpdate", rerender);
-      editor.off("transaction", rerender);
-      editor.off("update", rerender);
-    };
-  }, [editor]);
-
+  useEffect(() => setMounted(true), []);
+  if (!mounted) {
+    return (
+      <div className="w-full min-h-[300px] border rounded-lg bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-900">Editör yükleniyor...</div>
+      </div>
+    );
+  }
   if (!editor) return null;
 
-  // Aktif text style’ları oku
-  const ts = editor.getAttributes("textStyle") || {};
-  const currentFontSize =
-    Number.isFinite(ts.fontSize) && ts.fontSize > 0 ? ts.fontSize : null;
-  const currentFontFamily = ts.fontFamily || "";
-  const currentColor = ts.color || "#000000";
-
-  const btn =
-    "px-2 py-1 border rounded text-sm bg-white hover:bg-gray-200 active:scale-[.98] text-black font-medium disabled:bg-gray-100 disabled:text-gray-400";
-
-  const changeFontSize = (delta) => {
-    const base = currentFontSize ?? 16;
-    const next = Math.max(1, base + delta);
-    editor.chain().focus().setMark("textStyle", { fontSize: next }).run();
-  };
-
-  const setFontSize = (value) => {
-    const n = parseInt(value, 10);
-    if (!value) {
-      editor.chain().focus().setMark("textStyle", { fontSize: null }).run();
-      return;
-    }
-    if (Number.isFinite(n) && n > 0) {
-      editor.chain().focus().setMark("textStyle", { fontSize: n }).run();
-    }
-  };
-
-  const setFont = (family) => {
-    if (!family) {
-      editor.chain().focus().unsetFontFamily().run();
-    } else {
-      editor.chain().focus().setFontFamily(family).run();
-    }
-  };
-
-  const applyColor = (color) => {
-    if (!color) {
-      editor.chain().focus().unsetColor().run();
-    } else {
-      editor.chain().focus().setColor(color).run();
-    }
-  };
-
-  const setHeading = (level) => {
-    if (level === 0) return editor.chain().focus().setParagraph().run();
-    return editor.chain().focus().toggleHeading({ level }).run();
-  };
-
-  const setLinkPrompt = () => {
-    const prev = editor.getAttributes("link").href || "";
-    const url = window.prompt("Bağlantı URL", prev);
-    if (url === null) return; // iptal
+  const setLink = () => {
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("URL", previousUrl);
+    if (url === null) return;
     if (url === "") {
       editor.chain().focus().unsetLink().run();
       return;
@@ -166,274 +174,236 @@ export default function RichTextEditor({ initialHTML = "", onChange }) {
       .chain()
       .focus()
       .extendMarkRange("link")
-      .setLink({
-        href: url,
-        target: "_blank",
-        rel: "noopener noreferrer",
-      })
+      .setLink({ href: url, target: "_blank" })
       .run();
   };
 
+  const ToolbarButton = ({ onClick, isActive = false, disabled = false, children, title }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`p-2 rounded-md transition-colors ${
+        isActive
+          ? "bg-blue-100 text-blue-600"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      title={title}
+      type="button"
+    >
+      {children}
+    </button>
+  );
+
+  const ToolbarSeparator = () => <div className="w-px h-6 bg-gray-300 mx-1" />;
+
+  const handleHeading = (level) => {
+    const wasActive = editor.isActive("heading", { level });
+    editor.chain().focus().toggleHeading({ level }).run();
+    if (!wasActive) {
+      editor.chain().focus().setFontSize(headingSizes[level]).run();
+    } else {
+      editor.chain().focus().unsetFontSize().run();
+    }
+  };
+
+  const currentFontSize = editor.getAttributes("textStyle").fontSize ?? "";
+
   return (
-    <div className="w-full space-y-2">
-      {/* TOOLBAR */}
-      <div className="flex flex-wrap gap-2 items-center">
-        {/* Undo / Redo */}
-        <button
-          onClick={() => editor.chain().focus().undo().run()}
-          className={btn}
-          disabled={!editor.can().undo()}
-          title="Geri Al"
-        >
-          ↶
-        </button>
-        <button
-          onClick={() => editor.chain().focus().redo().run()}
-          className={btn}
-          disabled={!editor.can().redo()}
-          title="İleri Al"
-        >
-          ↷
-        </button>
+    <div className="w-full border rounded-lg bg-white overflow-hidden">
+      {/* Toolbar */}
+      <div className="border-b bg-gray-50 p-2">
+        <div className="flex flex-wrap items-center gap-1">
+          {/* Undo/Redo */}
+          <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Geri al">
+            <Undo size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="İleri al">
+            <Redo size={18} />
+          </ToolbarButton>
 
-        {/* Bold / Italic / Underline / Strike / Code */}
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`${btn} ${editor.isActive("bold") ? "bg-gray-200" : ""}`}
-          title="Kalın"
-        >
-          B
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`${btn} ${editor.isActive("italic") ? "bg-gray-200" : ""}`}
-          title="İtalik"
-        >
-          I
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`${btn} ${editor.isActive("underline") ? "bg-gray-200" : ""}`}
-          title="Altı Çizili"
-        >
-          <u>U</u>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={`${btn} ${editor.isActive("strike") ? "bg-gray-200" : ""}`}
-          title="Üstü Çizili"
-        >
-          S
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          className={`${btn} ${editor.isActive("code") ? "bg-gray-200" : ""}`}
-          title="Inline Code"
-        >
-          {"</>"}
-        </button>
+          <ToolbarSeparator />
 
-        {/* Sub/Sup */}
-        <button
-          onClick={() => editor.chain().focus().toggleSubscript().run()}
-          className={`${btn} ${editor.isActive("subscript") ? "bg-gray-200" : ""}`}
-          title="Alt Simge"
-        >
-          x<sub>2</sub>
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleSuperscript().run()}
-          className={`${btn} ${editor.isActive("superscript") ? "bg-gray-200" : ""}`}
-          title="Üst Simge"
-        >
-          x<sup>2</sup>
-        </button>
-
-        {/* Başlık */}
-        <select
-          className={btn}
-          onChange={(e) => setHeading(parseInt(e.target.value, 10))}
-          value={
-            [1, 2, 3, 4, 5, 6].find((l) => editor.isActive("heading", { level: l })) ?? 0
-          }
-          title="Başlık"
-        >
-          <option value={0}>Paragraf</option>
-          <option value={1}>H1</option>
-          <option value={2}>H2</option>
-          <option value={3}>H3</option>
-          <option value={4}>H4</option>
-          <option value={5}>H5</option>
-          <option value={6}>H6</option>
-        </select>
-
-        {/* Font Family */}
-        <select
-          className={btn}
-          onChange={(e) => setFont(e.target.value)}
-          value={currentFontFamily || ""}
-          title="Yazı Tipi"
-        >
-          <option value="">(Varsayılan)</option>
-          <option value="Inter">Inter (Modern)</option>
-          <option value="Arial">Arial</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Courier New">Courier New</option>
-          <option value="Roboto">Roboto</option>
-          <option value="Open Sans">Open Sans</option>
-          <option value="Playfair Display">Playfair Display</option>
-        </select>
-
-        {/* Font Size */}
-        <div className="flex items-center gap-1">
-          <button
-            className={btn}
-            onClick={() => changeFontSize(-1)}
-            title="Yazı Boyutunu Azalt"
+          {/* Paragraph */}
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setParagraph().unsetFontSize().run()}
+            isActive={editor.isActive("paragraph")}
+            title="Paragraf"
           >
-            −
-          </button>
-          <input
-            className={`${btn} w-20 text-center`}
-            type="number"
-            min={1}
-            placeholder="16"
-            value={currentFontSize ?? ""}
-            onChange={(e) => setFontSize(e.target.value)}
-            title="Yazı Boyutu (px)"
-          />
-          <button
-            className={btn}
-            onClick={() => changeFontSize(1)}
-            title="Yazı Boyutunu Artır"
+            <Pilcrow size={18} />
+          </ToolbarButton>
+
+          {/* Headings */}
+          {[1, 2, 3].map((level) => (
+            <ToolbarButton key={level} onClick={() => handleHeading(level)} isActive={editor.isActive("heading", { level })} title={`Başlık ${level}`}>
+              {level === 1 ? <Heading1 size={18} /> : level === 2 ? <Heading2 size={18} /> : <Heading3 size={18} />}
+            </ToolbarButton>
+          ))}
+
+          <ToolbarSeparator />
+
+          {/* Text formatting */}
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive("bold")} title="Kalın">
+            <Bold size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive("italic")} title="İtalik">
+            <Italic size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive("underline")} title="Altı çizili">
+            <UnderlineIcon size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive("strike")} title="Üstü çizili">
+            <Strikethrough size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()} isActive={editor.isActive("code")} title="Kod">
+            <Code size={18} />
+          </ToolbarButton>
+
+          <ToolbarSeparator />
+
+          {/* Sub/Superscript */}
+          <ToolbarButton onClick={() => editor.chain().focus().toggleSubscript().run()} isActive={editor.isActive("subscript")} title="Alt simge">
+            <SubscriptIcon size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleSuperscript().run()} isActive={editor.isActive("superscript")} title="Üst simge">
+            <SuperscriptIcon size={18} />
+          </ToolbarButton>
+
+          <ToolbarSeparator />
+
+          {/* Lists */}
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive("bulletList")} title="Madde işaretli liste">
+            <List size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive("orderedList")} title="Numaralı liste">
+            <ListOrdered size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive("blockquote")} title="Alıntı">
+            <Quote size={18} />
+          </ToolbarButton>
+
+          <ToolbarSeparator />
+
+          {/* Alignment */}
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("left").run()} isActive={editor.isActive({ textAlign: "left" })} title="Sola hizala">
+            <AlignLeft size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("center").run()} isActive={editor.isActive({ textAlign: "center" })} title="Ortala">
+            <AlignCenter size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("right").run()} isActive={editor.isActive({ textAlign: "right" })} title="Sağa hizala">
+            <AlignRight size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign("justify").run()} isActive={editor.isActive({ textAlign: "justify" })} title="İki yana yasla">
+            <AlignJustify size={18} />
+          </ToolbarButton>
+
+          <ToolbarSeparator />
+
+          {/* Link */}
+          <ToolbarButton onClick={setLink} isActive={editor.isActive("link")} title="Bağlantı ekle">
+            <LinkIcon size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().unsetLink().run()} disabled={!editor.isActive("link")} title="Bağlantıyı kaldır">
+            <Unlink size={18} />
+          </ToolbarButton>
+
+          <ToolbarSeparator />
+
+          {/* Color & Highlight */}
+          <ToolbarButton
+            onClick={() => {
+              const color = window.prompt("Renk kodu (ör: #ff0000)");
+              if (color) editor.chain().focus().setColor(color).run();
+            }}
+            title="Metin rengi"
           >
-            +
-          </button>
-          <span className="text-xs text-gray-500 ml-1">px</span>
+            <Palette size={18} />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => {
+              const color = window.prompt("Vurgu rengi (ör: #ffff00)");
+              if (color) editor.chain().focus().toggleHighlight({ color }).run();
+            }}
+            title="Vurgu rengi"
+          >
+            <Highlighter size={18} />
+          </ToolbarButton>
+            
+          <ToolbarSeparator />
+
+{/* Font size */}
+<select
+  className="border rounded p-1 text-sm text-black" // buraya text-black ekledik
+  value={currentFontSize}
+  onChange={(e) => {
+    const v = e.target.value;
+    if (v === "") {
+      editor.chain().focus().unsetFontSize().run();
+    } else {
+      editor.chain().focus().setFontSize(Number(v)).run();
+    }
+  }}
+  title="Yazı boyutu"
+>
+  <option value="" className="text-black">Boyut (temizle)</option>
+  {[...Array(55)].map((_, i) => {
+    const size = i + 6; // 6px - 60px
+    return (
+      <option key={size} value={size} className="text-black">
+        {size}px
+      </option>
+    );
+  })}
+</select>
+
+{/* Font family */}
+<select
+  className="border rounded p-1 text-sm ml-1 text-black" // buraya text-black ekledik
+  value={editor.getAttributes("textStyle").fontFamily || ""}
+  onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
+  title="Yazı tipi"
+>
+  <option value="" className="text-black">Varsayılan</option>
+  <option value="Arial" className="text-black">Arial</option>
+  <option value="Helvetica" className="text-black">Helvetica</option>
+  <option value='"Times New Roman"' className="text-black">Times New Roman</option>
+  <option value='"Courier New"' className="text-black">Courier New</option>
+  <option value="Verdana" className="text-black">Verdana</option>
+</select>
+
+
+          <ToolbarSeparator />
+
+          {/* Clear formatting & Horizontal line */}
+          <ToolbarButton onClick={() => editor.chain().focus().unsetAllMarks().run()} title="Biçimlendirmeyi temizle">
+            <RemoveFormatting size={18} />
+          </ToolbarButton>
+          <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Yatay çizgi ekle">
+            <Minus size={18} />
+          </ToolbarButton>
+<div className="ml-auto">
+  <button
+    className="px-3 py-1 bg-gray-200 text-black rounded text-sm font-medium
+               transition transform duration-200 ease-in-out
+               hover:bg-gray-300 hover:scale-105 hover:shadow-md"
+    onClick={() => alert("Kendi hür irademle yaptığım el emeği göz nuru metin editörümü güle güle kullanın. ")}
+    title="Text Editor by Can Matik"
+  >
+    Text Editor by Can Matik
+  </button>
+</div>
         </div>
-
-        {/* Renk & Vurgu */}
-        <input
-          type="color"
-          className="w-8 h-8 border rounded cursor-pointer"
-          value={currentColor}
-          onChange={(e) => applyColor(e.target.value)}
-          title="Metin Rengi"
-        />
-        <button
-          className={btn}
-          onClick={() => editor.chain().focus().toggleHighlight().run()}
-          title="Vurgu"
-        >
-          Vurgu
-        </button>
-
-        {/* Hizalama */}
-        <button
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          className={`${btn} ${editor.isActive({ textAlign: "left" }) ? "bg-gray-200" : ""}`}
-          title="Sola Hizala"
-        >
-          ←
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          className={`${btn} ${editor.isActive({ textAlign: "center" }) ? "bg-gray-200" : ""}`}
-          title="Ortala"
-        >
-          ↔
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          className={`${btn} ${editor.isActive({ textAlign: "right" }) ? "bg-gray-200" : ""}`}
-          title="Sağa Hizala"
-        >
-          →
-        </button>
-
-        {/* Listeler */}
-        <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`${btn} ${editor.isActive("bulletList") ? "bg-gray-200" : ""}`}
-          title="Madde İşaretli Liste"
-        >
-          • Liste
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`${btn} ${editor.isActive("orderedList") ? "bg-gray-200" : ""}`}
-          title="Numaralı Liste"
-        >
-          1. Liste
-        </button>
-        <button
-          onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
-          className={btn}
-          title="Girinti Artır (Liste)"
-        >
-          →|
-        </button>
-        <button
-          onClick={() => editor.chain().focus().liftListItem("listItem").run()}
-          className={btn}
-          title="Girinti Azalt (Liste)"
-        >
-          |←
-        </button>
-
-        {/* Alıntı / Kod Bloğu / Çizgi */}
-        <button
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`${btn} ${editor.isActive("blockquote") ? "bg-gray-200" : ""}`}
-          title="Alıntı"
-        >
-          “Alıntı”
-        </button>
-        <button
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`${btn} ${editor.isActive("codeBlock") ? "bg-gray-200" : ""}`}
-          title="Kod Bloğu"
-        >
-          {"</> Block"}
-        </button>
-        <button
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          className={btn}
-          title="Yatay Çizgi"
-        >
-          Çizgi
-        </button>
-
-        {/* Link */}
-        <button onClick={setLinkPrompt} className={btn} title="Bağlantı Ekle/Düzenle">
-          Link
-        </button>
-        <button
-          onClick={() => editor.chain().focus().unsetLink().run()}
-          className={btn}
-          title="Bağlantıyı Kaldır"
-        >
-          Unlink
-        </button>
-
-        {/* Temizle */}
-        <button
-          onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-          className={btn}
-          title="Tüm Biçimlendirmeyi Temizle"
-        >
-          Temizle
-        </button>
       </div>
 
-      {/* EDITOR */}
-      <div className="rounded border bg-white">
+      {/* Editor content */}
+      <div className="bg-white">
         <EditorContent editor={editor} />
       </div>
 
-      {/* FOOTER */}
-      <div className="text-xs text-gray-500">
-        {editor.storage.characterCount.characters()} karakter
+      {/* Footer */}
+      <div className="border-t bg-gray-50 px-4 py-2 text-sm text-gray-500 flex gap-4">
+        <span>{editor.storage.characterCount.words()} kelime</span>
+        <span>{editor.storage.characterCount.characters()} karakter</span>
       </div>
     </div>
   );

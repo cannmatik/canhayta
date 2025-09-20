@@ -31,6 +31,9 @@ export default function MakaleDuzenle() {
   const [mevcutKapak, setMevcutKapak] = useState(null);
   const [mevcutPDF, setMevcutPDF] = useState(null);
 
+  const baseColor = "#6B4E31";
+  const accentColor = "#D4A017";
+
   useEffect(() => {
     (async () => {
       try {
@@ -79,7 +82,6 @@ export default function MakaleDuzenle() {
       let kapakUrl = mevcutKapak;
       let pdfUrl = mevcutPDF;
 
-      // Kapak resmi yükleme
       if (form.kapak_resmi) {
         const ext = form.kapak_resmi.name.split(".").pop();
         const filename = `${uuidv4()}.${ext}`;
@@ -94,7 +96,6 @@ export default function MakaleDuzenle() {
         kapakUrl = kapakData.publicUrl;
       }
 
-      // PDF yükleme
       if (form.pdf_dosya) {
         const ext = form.pdf_dosya.name.split(".").pop();
         const filename = `${uuidv4()}.${ext}`;
@@ -137,12 +138,18 @@ export default function MakaleDuzenle() {
 
   if (loading) return <p className="p-4">Yükleniyor...</p>;
 
-  const inputClass = "w-full p-3 border border-gray-300 rounded bg-white text-[#6B4E31] focus:ring-2 focus:ring-[#6B4E31] focus:outline-none";
+  const inputClass = `w-full p-3 border border-gray-300 rounded bg-[#FFFDF8] text-[#6B4E31] focus:ring-2 focus:ring-${baseColor.replace(
+    "#",
+    ""
+  )} focus:outline-none transition duration-200`;
+
+  const buttonClass =
+    "w-full p-3 rounded bg-[#6B4E31] text-white font-semibold hover:bg-[#D4A017] hover:shadow-lg transition transform duration-200";
 
   return (
     <section className="bg-gradient-to-b from-[#FDF6E3] to-[#F9F1E0] min-h-screen flex flex-col justify-center items-center px-4 py-12">
-      <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg p-8 w-full max-w-2xl space-y-6">
-        <h2 className="text-2xl font-bold text-[#6B4E31] text-center">Makale Düzenle</h2>
+      <form onSubmit={handleSubmit} className="bg-[#FFFDF8] shadow-lg rounded-lg p-8 w-full max-w-2xl space-y-6">
+        <h2 className="text-2xl font-bold text-[#6B4E31] text-center mb-4">Makale Düzenle</h2>
 
         <input type="text" name="baslik" value={form.baslik} onChange={handleChange} placeholder="Başlık" className={inputClass} required />
         <textarea name="ozet" value={form.ozet} onChange={handleChange} placeholder="Özet" className={inputClass} rows={4} />
@@ -157,9 +164,7 @@ export default function MakaleDuzenle() {
 
         <div>
           <label className="block mb-1 text-[#6B4E31] font-semibold">Kapak Resmi</label>
-          {mevcutKapak && (
-            <img src={mevcutKapak} alt="Kapak" className="w-32 h-auto mb-2 border" />
-          )}
+          {mevcutKapak && <img src={mevcutKapak} alt="Kapak" className="w-32 h-auto mb-2 border rounded" />}
           <input type="file" name="kapak_resmi" accept="image/*" onChange={handleChange} className={inputClass} />
         </div>
 
@@ -167,7 +172,7 @@ export default function MakaleDuzenle() {
           <label className="block mb-1 text-[#6B4E31] font-semibold">PDF Dosya</label>
           {mevcutPDF && (
             <p className="mb-1">
-              Mevcut PDF: <a href={mevcutPDF} target="_blank" className="text-blue-600 underline">Göster</a>
+              Mevcut PDF: <a href={mevcutPDF} target="_blank" className="text-[#6B4E31] underline hover:text-[#D4A017]">Göster</a>
             </p>
           )}
           <input type="file" name="pdf_dosya" accept=".pdf" onChange={handleChange} className={inputClass} />
@@ -175,7 +180,7 @@ export default function MakaleDuzenle() {
 
         <div>
           <label className="block mb-1 text-[#6B4E31] font-semibold">İçerik</label>
-          <button type="button" onClick={() => setIsModalOpen(true)} className={inputClass + " mt-1"}>
+          <button type="button" onClick={() => setIsModalOpen(true)} className={`${inputClass} mt-1 text-left`}>
             {icerikHTML ? "İçeriği Düzenle" : "İçerik Ekle"}
           </button>
         </div>
@@ -185,7 +190,7 @@ export default function MakaleDuzenle() {
           <label htmlFor="aktif" className="text-[#6B4E31] font-semibold">Aktif / Pasif</label>
         </div>
 
-        <button type="submit" className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-300">
+        <button type="submit" className={buttonClass}>
           Güncelle
         </button>
 
@@ -198,14 +203,26 @@ export default function MakaleDuzenle() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl">
+          <div className="bg-[#FFFDF8] rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="flex justify-between mb-4">
               <h3 className="text-xl font-bold text-[#6B4E31]">İçerik Düzenleyici</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-2xl">×</button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-2xl hover:text-red-500 transition-colors duration-200"
+              >
+                ×
+              </button>
             </div>
+
             <RichTextEditor initialHTML={icerikHTML} onChange={setIcerikHTML} />
+
             <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 border rounded">Kapat</button>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-[#6B4E31] text-white border border-[#6B4E31] rounded hover:bg-[#D4A017] hover:shadow-lg transition duration-200 transform"
+              >
+                Kaydet & Çık
+              </button>
             </div>
           </div>
         </div>

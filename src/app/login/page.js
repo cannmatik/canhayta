@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { Box, Container, Typography, TextField, Button, Paper } from "@mui/material";
+import LockIcon from "@mui/icons-material/Lock";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,36 +25,99 @@ export default function LoginPage() {
   };
 
   return (
-    <section className="bg-gradient-to-b from-[#FDF6E3] to-[#F9F1E0] min-h-screen flex justify-center items-center px-4">
-      <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
-        <h2 className="text-2xl font-bold text-[#6B4E31] mb-6 text-center">
-          Admin Girişi
-        </h2>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="E-posta"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded bg-gray-50 text-gray-800 focus:ring-2 focus:ring-[#6B4E31] focus:outline-none"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Şifre"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded bg-gray-50 text-gray-800 focus:ring-2 focus:ring-[#6B4E31] focus:outline-none"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-yellow-400 text-white p-3 rounded hover:bg-yellow-500 transition duration-300 font-semibold"
-          >
-            Giriş Yap
-          </button>
-        </form>
-      </div>
-    </section>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(to bottom, #FDF6E3, #F9F1E0)",
+        px: 2,
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper
+          elevation={6}
+          sx={{
+            p: 5,
+            borderRadius: 3,
+            textAlign: "center",
+            background: "#fff",
+            boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
+            transition: "transform 0.25s ease, box-shadow 0.25s ease",
+            "&:hover": {
+              transform: "translateY(-4px)",
+              boxShadow: "0 14px 32px rgba(107,78,49,0.22)",
+            },
+          }}
+        >
+          <LockIcon sx={{ fontSize: 60, color: "#6B4E31", mb: 2 }} />
+          <Typography variant="h4" sx={{ color: "#6B4E31", fontWeight: "bold", mb: 4 }}>
+            Admin Girişi
+          </Typography>
+
+          <form onSubmit={handleLogin}>
+            <TextField
+              label="E-posta"
+              type="email"
+              fullWidth
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              margin="normal"
+              required
+              sx={{
+                "& .MuiInputBase-root": {
+                  backgroundColor: "#F5F5F5",
+                  borderRadius: 1,
+                },
+                "& .Mui-focused": {
+                  "& fieldset": {
+                    borderColor: "#6B4E31",
+                  },
+                },
+              }}
+            />
+
+            <TextField
+              label="Şifre"
+              type="password"
+              fullWidth
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              margin="normal"
+              required
+              sx={{
+                "& .MuiInputBase-root": {
+                  backgroundColor: "#F5F5F5",
+                  borderRadius: 1,
+                },
+                "& .Mui-focused": {
+                  "& fieldset": {
+                    borderColor: "#6B4E31",
+                  },
+                },
+              }}
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 3,
+                backgroundColor: "#D4A017",
+                color: "#fff",
+                py: 1.5,
+                fontWeight: "bold",
+                "&:hover": { backgroundColor: "#6B4E31" },
+                transition: "all 0.3s ease",
+              }}
+            >
+              Giriş Yap
+            </Button>
+          </form>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

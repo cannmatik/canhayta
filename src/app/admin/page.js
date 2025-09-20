@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { Box, Container, Typography, Grid, Card, CardContent, Button } from "@mui/material";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ArticleIcon from "@mui/icons-material/Article";
 
 export default function AdminPage() {
   const [user, setUser] = useState(null);
@@ -21,38 +24,68 @@ export default function AdminPage() {
 
   if (!user)
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-700 text-lg">Yükleniyor...</p>
-      </div>
+      <Box display="flex" alignItems="center" justifyContent="center" minHeight="100vh">
+        <Typography variant="h6" color="textSecondary">Yükleniyor...</Typography>
+      </Box>
     );
 
-  return (
-    <section className="min-h-screen bg-gradient-to-b from-[#FDF6E3] to-[#F9F1E0] pt-28 px-4">
-      {/* pt-28 ile navbar altından boşluk verdik */}
-      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8 flex flex-col items-center">
-        <h1 className="text-3xl font-bold mb-8 text-[#6B4E31] text-center">
-          Admin Paneli
-        </h1>
-        <p className="text-gray-700 mb-8 text-center">
-          Hoş geldin, <span className="font-semibold">{user.email}</span>
-        </p>
+  const cardStyle = {
+    cursor: "pointer",
+    borderRadius: 12,
+    padding: 3,
+    textAlign: "center",
+    background: "linear-gradient(135deg, #FDF6E3 0%, #F9F1E0 100%)",
+    boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
+    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+    "&:hover": {
+      transform: "translateY(-6px)",
+      boxShadow: "0 14px 32px rgba(107,78,49,0.22)",
+    },
+  };
 
-        {/* Butonlar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-          <a
-            href="/admin/makale-ekle"
-            className="block p-6 bg-yellow-400 text-white rounded-lg text-center font-semibold hover:bg-yellow-500 transition"
-          >
-            Makale Ekle
-          </a>
-          <a
-            href="/admin/makaleler"
-            className="block p-6 bg-blue-600 text-white rounded-lg text-center font-semibold hover:bg-blue-700 transition"
-          >
-            Tüm Makaleler
-          </a>
-        </div>
-      </div>
-    </section>
+  const iconStyle = {
+    fontSize: 50,
+    mb: 2,
+    color: "#6B4E31",
+    transition: "transform 0.25s ease",
+  };
+
+  return (
+    <Box sx={{ minHeight: "100vh", background: "linear-gradient(to bottom, #FDF6E3, #F9F1E0)", pt: 10 }}>
+      <Container maxWidth="md">
+        <Typography variant="h3" align="center" gutterBottom sx={{ color: "#6B4E31", fontWeight: "bold", mb: 6 }}>
+          Admin Paneli
+        </Typography>
+        <Typography variant="h6" align="center" sx={{ mb: 6 }}>
+          Hoş geldin, <strong>{user.email}</strong>
+        </Typography>
+
+        <Grid container spacing={4} justifyContent="center">
+          <Grid item xs={12} sm={6}>
+            <Card sx={cardStyle} onClick={() => router.push("/admin/makale-ekle")}>
+              <AddCircleIcon sx={iconStyle} />
+              <Typography variant="h6" gutterBottom>
+                Makale Ekle
+              </Typography>
+              <Typography variant="body2">
+                Yeni makaleler oluştur ve siteye ekle.
+              </Typography>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Card sx={cardStyle} onClick={() => router.push("/admin/makaleler")}>
+              <ArticleIcon sx={iconStyle} />
+              <Typography variant="h6" gutterBottom>
+                Tüm Makaleler
+              </Typography>
+              <Typography variant="body2">
+                Mevcut makaleleri görüntüle ve düzenle.
+              </Typography>
+            </Card>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 }

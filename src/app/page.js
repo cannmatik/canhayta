@@ -4,36 +4,47 @@ import {
   Box,
   Container,
   Typography,
-  Button,
   Grid,
   Card,
   CardContent,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import Hero from "./components/hero";
 import BusinessIcon from "@mui/icons-material/Business";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import WorkIcon from "@mui/icons-material/Work";
 import GavelIcon from "@mui/icons-material/Gavel";
 import BalanceIcon from "@mui/icons-material/Balance";
-import InfoIcon from "@mui/icons-material/Info";
-import ContactMailIcon from "@mui/icons-material/ContactMail";
+
+// Hero component
+function Hero() {
+  return (
+    <section
+      className="bg-gradient-to-b from-[#FDF6E3] to-[#F9F1E0] flex flex-col justify-center items-center text-center px-4"
+      style={{ minHeight: "60vh" }}
+    >
+      <h1 className="text-4xl md:text-5xl font-bold text-[#6B4E31] mb-4 md:mb-6 transition-all duration-200 hover:scale-[1.01] hover:drop-shadow-md">
+        Hukukta Güven ve Profesyonellik
+      </h1>
+      <p className="text-base md:text-lg text-[#6B4E31] mb-6 max-w-xl">
+        Av. Can Hayta, ticaret hukuku, aile hukuku ve iş hukuku alanlarında uzman danışmanlık hizmeti sunar.
+      </p>
+    </section>
+  );
+}
 
 export default function HomePage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Renkler (JS sabitleri)
-  const baseColor = "#6B4E31";   // Hero başlığı ile aynı
-  const accentColor = "#D4A017"; // Hover vurgu rengi
+  const baseColor = "#6B4E31"; // Hero ve tema renkleriyle uyumlu
+  const accentColor = "#D4A017";
 
-  // TS YOK: Normal JS nesneleri
   const cardSx = {
     maxWidth: 345,
     mx: "auto",
     backgroundColor: "#F5E8B7",
-    color: baseColor, // Yazılar/ikonlar default rengi
+    color: baseColor,
     textAlign: "center",
     borderRadius: 12,
     p: 2.5,
@@ -59,9 +70,10 @@ export default function HomePage() {
 
   return (
     <Box component="main" sx={{ width: "100%", overflowX: "hidden" }}>
+      {/* Hero Bölümü */}
       <Hero />
 
-      {/* Arka planlı bölüm tam genişlik */}
+      {/* Hizmetlerimiz Bölümü */}
       <Box sx={{ width: "100%", bgcolor: "#FDF6E3" }}>
         <Container
           maxWidth={false}
@@ -159,54 +171,47 @@ export default function HomePage() {
             </Grid>
           </Grid>
 
-          <Box sx={{ mt: isMobile ? 4 : 8, textAlign: "center" }}>
+          {/* Hakkımızda Bölümü */}
+          <Box
+            sx={{
+              mt: isMobile ? 6 : 10,
+              textAlign: "center",
+              px: isMobile ? 3 : 6,
+              py: 6,
+              borderRadius: 2,
+              background: "linear-gradient(180deg, #FDF6E3 0%, #F9F1E0 100%)",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.07)",
+            }}
+          >
             <Typography
               variant={isMobile ? "h5" : "h4"}
               gutterBottom
               color={baseColor}
-              sx={{ mx: "auto", maxWidth: "90%" }}
+              sx={{ mx: "auto", maxWidth: "90%", mb: 3, fontWeight: 700 }}
             >
               Hakkımızda
             </Typography>
-            <Typography variant="body1" color="text.secondary" maxWidth="md" sx={{ mx: "auto" }}>
-              Av. Can Hayta liderliğinde, 10 yılı aşkın deneyimle hukuki çözümler sunuyoruz.
-              Müşteri memnuniyeti ve güven ilkemizdir.
-            </Typography>
-            <Button
-              variant="contained"
-              sx={{
-                mt: 4,
-                backgroundColor: baseColor,
-                "&:hover": { backgroundColor: accentColor },
-              }}
-              href="/about"
-              startIcon={<InfoIcon />}
-            >
-              Daha Fazla Bilgi
-            </Button>
-          </Box>
 
-          <Box sx={{ mt: isMobile ? 4 : 8, textAlign: "center" }}>
             <Typography
-              variant={isMobile ? "h5" : "h4"}
-              gutterBottom
+              variant="body1"
               color={baseColor}
-              sx={{ mx: "auto", maxWidth: "90%" }}
+              maxWidth="md"
+              sx={{ mx: "auto", mb: 2, lineHeight: 1.7, fontSize: isMobile ? 15 : 16 }}
             >
-              İletişim
+              Av. Can Hayta liderliğinde, 10 yılı aşkın deneyimle ticaret, aile, iş, ceza ve miras hukuku alanlarında
+              profesyonel danışmanlık hizmeti sunuyoruz. Müşteri memnuniyeti, güven ve şeffaflık temel ilkelerimizdir.
+              Her dava ve danışmanlık süreci için kişiye özel çözümler üretiyor, hukuki süreçleri anlaşılır ve yönetilebilir kılıyoruz.
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<ContactMailIcon />}
-              sx={{
-                mt: 2,
-                backgroundColor: baseColor,
-                "&:hover": { backgroundColor: accentColor },
-              }}
-              href="/contact"
+
+            <Typography
+              variant="body1"
+              color={baseColor}
+              maxWidth="md"
+              sx={{ mx: "auto", lineHeight: 1.7, fontSize: isMobile ? 15 : 16 }}
             >
-              Bize Ulaşın
-            </Button>
+              Ekibimiz alanında uzman avukatlardan oluşmakta olup, hukuki süreçlerde etkin ve hızlı çözümler sağlamaktadır.
+              Bizimle çalışarak, karmaşık hukuki konuları güvenle yönetebilir ve profesyonel destek alabilirsiniz.
+            </Typography>
           </Box>
         </Container>
       </Box>

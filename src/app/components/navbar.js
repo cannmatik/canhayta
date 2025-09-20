@@ -1,10 +1,16 @@
 "use client";
+
 import { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const navItems = [
     { title: "Ana Sayfa", href: "/" },
@@ -14,80 +20,109 @@ export default function Navbar() {
     { title: "İletişim", href: "/contact" },
   ];
 
+  const bgColor = "bg-[#FFF9EB]"; // Mevcut #FFF5E0 yerine hafif daha açık ton
+  const textColor = "text-[#6B4E31]";
+  const hoverColor = "hover:text-[#D4A017]";
+  const activeClass = "font-bold shadow-md";
+
+  const isActiveLink = (href) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href));
+
   return (
-    <>
-      <nav className="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-md h-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="flex justify-between items-center h-full">
-            {/* Logo */}
-            <div className="flex-shrink-0 flex items-center">
-              <Image src="/logo.png" alt="Logo" width={80} height={80} />
-            </div>
+    <header className={`sticky top-0 z-50 ${bgColor} shadow-md backdrop-blur-sm`}>
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={69}
+            height={69}
+            className="transition-transform duration-300 hover:scale-110"
+          />
+        </Link>
 
-            {/* Menü (Desktop) */}
-            <div className="hidden md:flex md:space-x-8 items-center">
-              {navItems.map((item, idx) => (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  className="text-black hover:text-[--primary-gold]"
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </div>
-
-            {/* Hamburger Menü (Mobile) */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={() => setOpen(!open)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-black hover:text-[--primary-gold] focus:outline-none"
-              >
-                <svg
-                  className="h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  {open ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  )}
-                </svg>
-              </button>
-            </div>
-          </div>
+        <div className="hidden md:flex gap-x-8">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`px-2 py-1 rounded-md transition-all duration-300 ${textColor} ${hoverColor} ${
+                isActiveLink(item.href) ? activeClass : "font-medium"
+              }`}
+            >
+              {item.title}
+            </Link>
+          ))}
         </div>
 
-        {/* Mobil menü */}
-        {open && (
-          <div className="md:hidden bg-white/90 py-4 space-y-2 text-center">
-            {navItems.map((item, idx) => (
-              <Link
-                key={idx}
-                href={item.href}
-                className="block text-black hover:text-[--primary-gold] py-2"
-                onClick={() => setOpen(false)}
-              >
-                {item.title}
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className="md:hidden">
+          <button
+            type="button"
+            className={`${textColor} p-2 ${hoverColor}`}
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        </div>
       </nav>
-    </>
+
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <Dialog
+            as="div"
+            className="md:hidden fixed inset-0 z-50"
+            open={mobileMenuOpen}
+            onClose={setMobileMenuOpen}
+          >
+            <motion.div
+              className="fixed inset-0 bg-black/30 backdrop-blur-[1px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            <motion.div
+              className={`fixed top-0 right-0 h-full w-full max-w-sm ${bgColor} shadow-xl flex flex-col p-6`}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 260, damping: 25 }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={60}
+                  height={60}
+                  className="transition-transform duration-300 hover:scale-110"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`${textColor} p-2 ${hoverColor}`}
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`px-4 py-2 rounded-md transition-all duration-300 ${textColor} ${hoverColor} ${
+                      isActiveLink(item.href) ? activeClass : "font-medium"
+                    }`}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          </Dialog>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }
