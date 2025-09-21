@@ -13,6 +13,10 @@ import {
   Card,
   CardContent,
   CardMedia,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { Masonry } from "@mui/lab";
@@ -24,12 +28,18 @@ export default function Makaleler() {
   const isMobileQuery = useMediaQuery(theme.breakpoints.down("md"));
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+
   const [makaleler, setMakaleler] = useState([]);
   const [filteredMakaleler, setFilteredMakaleler] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
+
+  const [turler, setTurler] = useState([]);
+  const [yazarlar, setYazarlar] = useState([]);
+  const [selectedTur, setSelectedTur] = useState("");
+  const [selectedYazar, setSelectedYazar] = useState("");
 
   const baseColor = "#6B4E31";
   const accentColor = "#D4A017";
@@ -55,48 +65,61 @@ export default function Makaleler() {
     setItemsPerPage(isMobileQuery ? 6 : 9);
   }, [isMobileQuery]);
 
+  // Makale, tür ve yazar verilerini çek
   useEffect(() => {
-    const fetchMakaleler = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
+        const { data: makaleData, error: makaleError } = await supabase
           .from("Makaleler")
-          .select(
-            `
+          .select(`
             id,
             baslik,
             ozet,
             kapak_resmi_url,
             yayim_tarihi,
             seo_slug,
-            makale_turleri ("Tur"),
-            yazarlar (ad, soyad)
-            `
-          )
-          .eq("aktif", true) // Sadece aktif olan makaleleri çek
+            makale_turleri (id, Tur),
+            yazarlar (id, ad, soyad)
+          `)
+          .eq("aktif", true)
           .order("yayim_tarihi", { ascending: false });
+        if (makaleError) throw makaleError;
+        setMakaleler(makaleData || []);
+        setFilteredMakaleler(makaleData || []);
 
-        if (error) throw error;
-        setMakaleler(data || []);
-        setFilteredMakaleler(data || []);
+        const { data: turData } = await supabase.from("makale_turleri").select("*");
+        setTurler(turData || []);
+
+        const { data: yazarData } = await supabase.from("yazarlar").select("*");
+        setYazarlar(yazarData || []);
       } catch (error) {
-        console.error("Makale çekme hatası:", error.message);
+        console.error("Veri çekme hatası:", error.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchMakaleler();
+    fetchData();
   }, []);
 
+  // Filtreleme ve arama
   useEffect(() => {
-    const filtered = makaleler.filter((makale) =>
-      makale.baslik.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      makale.ozet?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      `${makale.yazarlar?.ad} ${makale.yazarlar?.soyad}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      makale.makale_turleri?.["Tur"]?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = makaleler.filter((makale) => {
+      const matchesSearch =
+        makale.baslik.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        makale.ozet?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        `${makale.yazarlar?.ad || ""} ${makale.yazarlar?.soyad || ""}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        makale.makale_turleri?.Tur?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesTur = selectedTur ? makale.makale_turleri?.id === selectedTur : true;
+      const matchesYazar = selectedYazar ? makale.yazarlar?.id === selectedYazar : true;
+
+      return matchesSearch && matchesTur && matchesYazar;
+    });
     setFilteredMakaleler(filtered);
     setCurrentPage(1);
-  }, [searchQuery, makaleler]);
+  }, [searchQuery, selectedTur, selectedYazar, makaleler]);
 
   const totalPages = Math.ceil(filteredMakaleler.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -139,7 +162,17 @@ export default function Makaleler() {
           Makaleler
         </Typography>
 
-        <Box sx={{ mb: 4, width: "100%", maxWidth: 600 }}>
+        {/* Filtreler */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            gap: 2,
+            mb: 4,
+            width: "100%",
+            justifyContent: "center",
+          }}
+        >
           <TextField
             fullWidth
             variant="outlined"
@@ -154,14 +187,44 @@ export default function Makaleler() {
               ),
               sx: { borderRadius: 2, backgroundColor: "white" },
             }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
           />
+
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel id="tur-select-label">Makale Türü</InputLabel>
+            <Select
+              labelId="tur-select-label"
+              value={selectedTur}
+              label="Makale Türü"
+              onChange={(e) => setSelectedTur(e.target.value)}
+            >
+              <MenuItem value="">Tümü</MenuItem>
+              {turler.map((tur) => (
+                <MenuItem key={tur.id} value={tur.id}>
+                  {tur.Tur}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel id="yazar-select-label">Yazar</InputLabel>
+            <Select
+              labelId="yazar-select-label"
+              value={selectedYazar}
+              label="Yazar"
+              onChange={(e) => setSelectedYazar(e.target.value)}
+            >
+              <MenuItem value="">Tümü</MenuItem>
+              {yazarlar.map((yazar) => (
+                <MenuItem key={yazar.id} value={yazar.id}>
+                  {yazar.ad} {yazar.soyad}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
 
+        {/* Makale Kartları */}
         <Box sx={{ width: "100%" }}>
           {currentMakaleler.length === 0 ? (
             <Typography variant="body1" color={baseColor} align="center">
