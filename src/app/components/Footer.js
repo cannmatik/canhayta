@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="bg-[--primary-gold] text-[--secondary-brown] py-2 mt-2 text-sm">
       <div className="max-w-7xl mx-auto px-2 text-center space-y-0.5">
-        <p>© {new Date().getFullYear()} Av. Can Hayta. Tüm hakları saklıdır.</p>
+        <p>© {new Date().getFullYear()} Av. Hüseyin Can Hayta. Tüm hakları saklıdır.</p>
         <Link
           href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x14cab9ab76e30bcd:0x42c8ab10f7fa01a5?sa=X&ved=1t:8290&ictx=111"
           target="_blank"

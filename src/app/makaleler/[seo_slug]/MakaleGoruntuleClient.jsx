@@ -12,7 +12,7 @@ import {
   CircularProgress,
   Button,
   Dialog,
-  Fade,
+  ButtonGroup,
 } from "@mui/material";
 import {
   FullscreenExit,
@@ -22,6 +22,8 @@ import {
   Palette,
   Close,
   ArrowBackIos,
+  TextDecrease,
+  TextIncrease,
 } from "@mui/icons-material";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useParams } from "next/navigation";
@@ -87,7 +89,7 @@ export default function MakaleGoruntuleClient() {
     setIsExiting(true);
     setTimeout(() => {
       router.push("/makaleler");
-    }, 300); // Animasyon süresi ile aynı olmalı
+    }, 300);
   };
 
   const goToPrevious = () => {
@@ -120,6 +122,22 @@ export default function MakaleGoruntuleClient() {
       setBgColor("#FDF6E3");
       setFontColor("#6B4E31");
     }
+  };
+
+  const increaseFontSize = () => {
+    setFontSize((current) => {
+      if (current === "1rem") return "1.125rem";
+      if (current === "1.125rem") return "1.25rem";
+      return "1.25rem";
+    });
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize((current) => {
+      if (current === "1.25rem") return "1.125rem";
+      if (current === "1.125rem") return "1rem";
+      return "1rem";
+    });
   };
 
   if (!isClient) return null;
@@ -171,26 +189,28 @@ export default function MakaleGoruntuleClient() {
             }}
           >
             <Container maxWidth="lg" sx={{ px: 2 }}>
-              {/* Geri Dön ve Tema Butonları */}
+              {/* Üst Kontrol Çubuğu */}
               <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   mb: { xs: 2, md: 4 },
+                  flexWrap: "wrap",
+                  gap: 2,
                 }}
               >
                 <Button
                   variant="outlined"
                   startIcon={<ArrowBackIos />}
                   sx={{
-                    color: baseColor,
-                    borderColor: baseColor,
+                    color: fontColor,
+                    borderColor: fontColor,
                     borderRadius: "999px",
                     px: 3,
                     "&:hover": {
-                      borderColor: baseColor,
-                      bgcolor: `${baseColor}10`,
+                      borderColor: fontColor,
+                      bgcolor: `${fontColor}10`,
                     },
                     fontSize: { xs: "0.8rem", md: "1rem" },
                   }}
@@ -199,20 +219,57 @@ export default function MakaleGoruntuleClient() {
                   Geri Dön
                 </Button>
 
-                <Button
-                  variant="contained"
-                  startIcon={<Palette />}
-                  sx={{
-                    bgcolor: baseColor,
-                    borderRadius: "999px",
-                    px: 3,
-                    "&:hover": { bgcolor: "#5a3c26" },
-                    fontSize: { xs: "0.8rem", md: "1rem" },
-                  }}
-                  onClick={toggleTheme}
-                >
-                  Tema
-                </Button>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <ButtonGroup
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderColor: fontColor }}
+                  >
+                    <IconButton
+                      onClick={decreaseFontSize}
+                      disabled={fontSize === "1rem"}
+                      sx={{ 
+                        color: fontColor, 
+                        borderColor: fontColor,
+                        "&:disabled": { color: "text.disabled" },
+                        px: 1
+                      }}
+                    >
+                      <TextDecrease />
+                    </IconButton>
+                    <IconButton
+                      onClick={increaseFontSize}
+                      disabled={fontSize === "1.25rem"}
+                      sx={{ 
+                        color: fontColor, 
+                        borderColor: fontColor,
+                        "&:disabled": { color: "text.disabled" },
+                        px: 1
+                      }}
+                    >
+                      <TextIncrease />
+                    </IconButton>
+                  </ButtonGroup>
+
+                  <Button
+                    variant="contained"
+                    startIcon={<Palette />}
+                    sx={{
+                      bgcolor: fontColor,
+                      color: bgColor,
+                      borderRadius: "999px",
+                      px: 3,
+                      "&:hover": { 
+                        bgcolor: fontColor,
+                        opacity: 0.9
+                      },
+                      fontSize: { xs: "0.8rem", md: "1rem" },
+                    }}
+                    onClick={toggleTheme}
+                  >
+                    Tema
+                  </Button>
+                </Box>
               </Box>
 
               {/* Başlık */}
@@ -258,12 +315,12 @@ export default function MakaleGoruntuleClient() {
                           width: 300,
                           height: 300,
                           borderRadius: 2,
-                          border: `1px solid ${baseColor}40`,
+                          border: `1px solid ${fontColor}40`,
                           overflow: "hidden",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          bgcolor: "white",
+                          bgcolor: bgColor === "#FDF6E3" ? "white" : "#444",
                           boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                         }}
                       >
@@ -298,13 +355,13 @@ export default function MakaleGoruntuleClient() {
                   >
                     {/* Özet */}
                     {makale.ozet && (
-                      <Box sx={{ mb: 2 }}>
+                      <Box sx={{ mb: 2, fontSize: fontSize }}>
                         <Typewriter
                           onInit={(typewriter) => {
                             typewriter.typeString(makale.ozet).start();
                           }}
                           options={{
-                            delay: 15,
+                            delay: 5,
                             autoStart: true,
                             loop: false,
                           }}
@@ -320,12 +377,16 @@ export default function MakaleGoruntuleClient() {
                           p: 3,
                           bgcolor: bgColor,
                           borderRadius: 2,
-                          border: `1px solid ${baseColor}40`,
+                          border: `1px solid ${fontColor}40`,
                           boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
                           transition: "all 0.3s",
+                          fontSize: fontSize,
                           "& *": {
-                            color: fontColor + " !important",
-                            fontSize: fontSize,
+                            color: `${fontColor} !important`,
+                            fontSize: "inherit !important",
+                          },
+                          "& h1, & h2, & h3, & h4, & h5, & h6": {
+                            color: `${fontColor} !important`,
                           },
                         }}
                         dangerouslySetInnerHTML={{ __html: makale.icerik_html }}
@@ -338,7 +399,14 @@ export default function MakaleGoruntuleClient() {
                         <Button
                           variant="contained"
                           startIcon={<PictureAsPdf />}
-                          sx={{ bgcolor: baseColor, "&:hover": { bgcolor: "#5a3c26" } }}
+                          sx={{ 
+                            bgcolor: fontColor, 
+                            color: bgColor,
+                            "&:hover": { 
+                              bgcolor: fontColor,
+                              opacity: 0.9
+                            } 
+                          }}
                           onClick={() => setFullscreen(true)}
                         >
                           PDF Görüntüle
@@ -367,17 +435,23 @@ export default function MakaleGoruntuleClient() {
                     <IconButton
                       onClick={goToPrevious}
                       disabled={currentIndex === 0}
-                      sx={{ color: baseColor, "&:disabled": { color: "text.disabled" } }}
+                      sx={{ 
+                        color: fontColor, 
+                        "&:disabled": { color: "text.disabled" } 
+                      }}
                     >
                       <ArrowBack />
                     </IconButton>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: fontColor }}>
                       {currentIndex + 1} / {allMakaleler.length}
                     </Typography>
                     <IconButton
                       onClick={goToNext}
                       disabled={currentIndex === allMakaleler.length - 1}
-                      sx={{ color: baseColor, "&:disabled": { color: "text.disabled" } }}
+                      sx={{ 
+                        color: fontColor, 
+                        "&:disabled": { color: "text.disabled" } 
+                      }}
                     >
                       <ArrowForward />
                     </IconButton>

@@ -9,12 +9,24 @@ import {
   CardContent,
   useMediaQuery,
   useTheme,
+  Button,
+  CardActionArea,
 } from "@mui/material";
-import BusinessIcon from "@mui/icons-material/Business";
-import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
-import WorkIcon from "@mui/icons-material/Work";
-import GavelIcon from "@mui/icons-material/Gavel";
-import BalanceIcon from "@mui/icons-material/Balance";
+import * as MuiIcons from "@mui/icons-material"; // ✅ tüm ikonlar
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+
+// İkonu dinamik resolve eden fonksiyon
+const DynamicIcon = ({ ikonAdi, sx }) => {
+  if (!ikonAdi) return <Typography variant="body2">İkon Yok</Typography>;
+  const IconComponent = MuiIcons[ikonAdi];
+  return IconComponent ? (
+    <IconComponent sx={sx} />
+  ) : (
+    <Typography variant="body2">İkon Yok</Typography>
+  );
+};
 
 // Hero component
 function Hero() {
@@ -27,7 +39,8 @@ function Hero() {
         Hukukta Güven ve Profesyonellik
       </h1>
       <p className="text-base md:text-lg text-[#6B4E31] mb-6 max-w-xl">
-        Av. Can Hayta, ticaret hukuku, aile hukuku ve iş hukuku alanlarında uzman danışmanlık hizmeti sunar.
+        Av. Can Hayta, ticaret hukuku, aile hukuku ve iş hukuku alanlarında
+        uzman danışmanlık hizmeti sunar.
       </p>
     </section>
   );
@@ -36,11 +49,15 @@ function Hero() {
 export default function HomePage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [hizmetler, setHizmetler] = useState([]);
+  const [aboutSummary, setAboutSummary] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const baseColor = "#6B4E31"; // Hero ve tema renkleriyle uyumlu
+  const baseColor = "#6B4E31";
   const accentColor = "#D4A017";
 
   const cardSx = {
+    width: "100%",
     maxWidth: 345,
     mx: "auto",
     backgroundColor: "#F5E8B7",
@@ -51,6 +68,8 @@ export default function HomePage() {
     boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
     transition: "transform 220ms ease, box-shadow 220ms ease",
     cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
     "&:hover": {
       transform: "translateY(-6px)",
       boxShadow: "0 14px 32px rgba(107,78,49,0.22)",
@@ -68,6 +87,35 @@ export default function HomePage() {
     transition: "color 200ms ease, transform 200ms ease",
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      // Hizmetleri çek
+      const { data: hizmetlerData, error: hizmetlerError } = await supabase
+        .from("sayfalar")
+        .select("baslik, ana_ozet, slug, ikon")
+        .like("slug", "hizmetler/%");
+
+      if (!hizmetlerError && hizmetlerData) {
+        setHizmetler(hizmetlerData);
+      }
+
+      // Hakkında özet sayfasını çek
+      const { data: ozetData, error: ozetError } = await supabase
+        .from("sayfalar")
+        .select("icerik_html")
+        .eq("slug", "hakkinda_ozet")
+        .single();
+
+      if (!ozetError && ozetData) {
+        const plainText = ozetData.icerik_html.replace(/<[^>]+>/g, "");
+        setAboutSummary(plainText);
+      }
+
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
   return (
     <Box component="main" sx={{ width: "100%", overflowX: "hidden" }}>
       {/* Hero Bölümü */}
@@ -80,7 +128,7 @@ export default function HomePage() {
           disableGutters
           sx={{
             py: isMobile ? 4 : 8,
-            px: 0,
+            px: isMobile ? 2 : 4,
             mx: 0,
             textAlign: "center",
           }}
@@ -90,86 +138,84 @@ export default function HomePage() {
             align="center"
             gutterBottom
             color={baseColor}
-            sx={{ mx: "auto", maxWidth: "90%" }}
+            sx={{ mx: "auto", maxWidth: "90%", mb: 4 }}
           >
             Hizmetlerimiz
           </Typography>
 
-          <Grid
-            container
-            spacing={isMobile ? 2 : 4}
-            sx={{ mt: isMobile ? 2 : 4, justifyContent: "center", width: "100%", m: 0 }}
-          >
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={cardSx}>
-                <CardContent>
-                  <BusinessIcon sx={iconSx} />
-                  <Typography gutterBottom variant="h5" component="div">
-                    Ticaret Hukuku
-                  </Typography>
-                  <Typography variant="body2">
-                    Uzman kadromuzla ticari anlaşmazlıklarınızı çözüyoruz.
-                  </Typography>
-                </CardContent>
-              </Card>
+          {loading ? (
+            <Typography variant="body1" color={baseColor}>
+              Yükleniyor...
+            </Typography>
+          ) : hizmetler.length === 0 ? (
+            <Typography variant="body1" color={baseColor}>
+              Hizmet bulunamadı.
+            </Typography>
+          ) : (
+            <Grid
+              container
+              spacing={isMobile ? 2 : 4}
+              sx={{
+                mt: isMobile ? 2 : 4,
+                justifyContent: "center",
+                alignItems: "stretch",
+              }}
+            >
+              {hizmetler.map((hizmet) => (
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  key={hizmet.slug}
+                  sx={{ display: "flex" }}
+                >
+                  <Card sx={cardSx}>
+                    <CardActionArea
+                      component={Link}
+                      href={`/${hizmet.slug}`}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        textDecoration: "none",
+                        height: "100%",
+                      }}
+                    >
+                      <CardContent
+                        sx={{
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                      >
+                        <DynamicIcon ikonAdi={hizmet.ikon} sx={iconSx} />
+                        <Typography
+                          gutterBottom
+                          variant="h5"
+                          component="div"
+                          sx={{ mt: 1 }}
+                        >
+                          {hizmet.baslik}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            maxWidth: "90%",
+                            wordBreak: "break-word",
+                            mt: 1,
+                          }}
+                        >
+                          {hizmet.ana_ozet || "Özet bulunamadı."}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={cardSx}>
-                <CardContent>
-                  <FamilyRestroomIcon sx={iconSx} />
-                  <Typography gutterBottom variant="h5" component="div">
-                    Aile Hukuku
-                  </Typography>
-                  <Typography variant="body2">
-                    Ailevi konularda profesyonel destek sunuyoruz.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={cardSx}>
-                <CardContent>
-                  <WorkIcon sx={iconSx} />
-                  <Typography gutterBottom variant="h5" component="div">
-                    İş Hukuku
-                  </Typography>
-                  <Typography variant="body2">
-                    İşçi-işveren uyuşmazlıklarında yanınızdayız.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={cardSx}>
-                <CardContent>
-                  <GavelIcon sx={iconSx} />
-                  <Typography gutterBottom variant="h5" component="div">
-                    Ceza Hukuku
-                  </Typography>
-                  <Typography variant="body2">
-                    Ceza davalarında güçlü savunma sağlıyoruz.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={cardSx}>
-                <CardContent>
-                  <BalanceIcon sx={iconSx} />
-                  <Typography gutterBottom variant="h5" component="div">
-                    Miras Hukuku
-                  </Typography>
-                  <Typography variant="body2">
-                    Miras davalarında adil çözümler sunuyoruz.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          )}
 
           {/* Hakkımızda Bölümü */}
           <Box
@@ -187,31 +233,58 @@ export default function HomePage() {
               variant={isMobile ? "h5" : "h4"}
               gutterBottom
               color={baseColor}
-              sx={{ mx: "auto", maxWidth: "90%", mb: 3, fontWeight: 700 }}
+              sx={{
+                mx: "auto",
+                maxWidth: "90%",
+                mb: 3,
+                fontWeight: 700,
+              }}
             >
               Hakkımızda
             </Typography>
 
-            <Typography
-              variant="body1"
-              color={baseColor}
-              maxWidth="md"
-              sx={{ mx: "auto", mb: 2, lineHeight: 1.7, fontSize: isMobile ? 15 : 16 }}
-            >
-              Av. Can Hayta liderliğinde, 10 yılı aşkın deneyimle ticaret, aile, iş, ceza ve miras hukuku alanlarında
-              profesyonel danışmanlık hizmeti sunuyoruz. Müşteri memnuniyeti, güven ve şeffaflık temel ilkelerimizdir.
-              Her dava ve danışmanlık süreci için kişiye özel çözümler üretiyor, hukuki süreçleri anlaşılır ve yönetilebilir kılıyoruz.
-            </Typography>
-
-            <Typography
-              variant="body1"
-              color={baseColor}
-              maxWidth="md"
-              sx={{ mx: "auto", lineHeight: 1.7, fontSize: isMobile ? 15 : 16 }}
-            >
-              Ekibimiz alanında uzman avukatlardan oluşmakta olup, hukuki süreçlerde etkin ve hızlı çözümler sağlamaktadır.
-              Bizimle çalışarak, karmaşık hukuki konuları güvenle yönetebilir ve profesyonel destek alabilirsiniz.
-            </Typography>
+            {loading ? (
+              <Typography variant="body1" color={baseColor}>
+                Yükleniyor...
+              </Typography>
+            ) : aboutSummary ? (
+              <>
+                <Typography
+                  variant="body1"
+                  color={baseColor}
+                  maxWidth="md"
+                  sx={{
+                    mx: "auto",
+                    mb: 3,
+                    lineHeight: 1.7,
+                    fontSize: isMobile ? 15 : 16,
+                  }}
+                >
+                  {aboutSummary}
+                </Typography>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  href="/hakkinda"
+                  sx={{
+                    mt: 3,
+                    backgroundColor: accentColor,
+                    color: "#FFF",
+                    "&:hover": { backgroundColor: "#B88C14" },
+                    borderRadius: 2,
+                    px: 4,
+                    py: 1.5,
+                    fontWeight: 600,
+                  }}
+                >
+                  Detaylı Bilgi
+                </Button>
+              </>
+            ) : (
+              <Typography variant="body1" color={baseColor}>
+                Hakkında özet içeriği bulunamadı.
+              </Typography>
+            )}
           </Box>
         </Container>
       </Box>
