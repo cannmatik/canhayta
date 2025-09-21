@@ -12,11 +12,10 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-// Dinamik olarak public klasöründen resim URL'si
-const baseUrl = "https://canhayta.vercel.app"; // canlı site URL'si
-const logoPath = "/logo.png"; // public klasöründeki logo
+const baseUrl = "https://canhayta.vercel.app";
+const ogImagePath = "/og_image.png"; // Sosyal medya için og_image.png kullanıyoruz
+const logoPath = "/logo.png";
 
-// Schema.org markup
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LegalService",
@@ -28,44 +27,40 @@ const localBusinessSchema = {
     "addressLocality": "İstanbul",
     "addressRegion": "İstanbul",
     "postalCode": "34000",
-    "addressCountry": "TR"
+    "addressCountry": "TR",
   },
   "telephone": "+902121234567",
   "url": baseUrl,
   "openingHoursSpecification": {
     "@type": "OpeningHoursSpecification",
-    "dayOfWeek": [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday"
-    ],
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
     "opens": "09:00",
-    "closes": "18:00"
-  }
+    "closes": "18:00",
+  },
 };
 
 export const metadata = {
   title: "Hayta Hukuk ve Danışmanlık | Avukatlık ve Hukuki Danışmanlık Hizmetleri",
-  description: "Hayta Hukuk ve Danışmanlık, alanında uzman avukatlarla müvekkillerine kapsamlı hukuki danışmanlık ve avukatlık hizmetleri sunar. Aile, ceza, gayrimenkul, miras ve ticaret hukuku başta olmak üzere çeşitli alanlarda güvenilir çözümler için bize ulaşın.",
-  keywords: "avukat, hukuk, danışmanlık, avukatlık, İstanbul, hukuk bürosu, ceza hukuku, aile hukuku, miras hukuku, ticaret hukuku",
-  authors: [{ name: 'Hayta Hukuk Bürosu' }],
+  description:
+    "Hayta Hukuk ve Danışmanlık, alanında uzman avukatlarla müvekkillerine kapsamlı hukuki danışmanlık ve avukatlık hizmetleri sunar. Aile, ceza, gayrimenkul, miras ve ticaret hukuku başta olmak üzere çeşitli alanlarda güvenilir çözümler için bize ulaşın.",
+  keywords:
+    "avukat, hukuk, danışmanlık, avukatlık, İstanbul, hukuk bürosu, ceza hukuku, aile hukuku, miras hukuku, ticaret hukuku",
+  authors: [{ name: "Hayta Hukuk Bürosu" }],
   openGraph: {
-    title: 'Hayta Hukuk ve Danışmanlık',
-    description: 'Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar.',
+    title: "Hayta Hukuk ve Danışmanlık",
+    description: "Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar.",
     url: baseUrl,
-    siteName: 'Hayta Hukuk ve Danışmanlık',
+    siteName: "Hayta Hukuk ve Danışmanlık",
     images: [
       {
-        url: `${baseUrl}${logoPath}`,
+        url: `${baseUrl}${ogImagePath}`, // og_image.png kullanıyoruz
         width: 1200,
         height: 630,
-        alt: 'Hayta Hukuk ve Danışmanlık Logosu',
+        alt: "Hayta Hukuk ve Danışmanlık Logosu",
       },
     ],
-    locale: 'tr_TR',
-    type: 'website',
+    locale: "tr_TR",
+    type: "website",
   },
   icons: {
     icon: [
@@ -73,6 +68,7 @@ export const metadata = {
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png", rel: "apple-touch-icon" },
+      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" }, // android-chrome-192x192.png favicon olarak
     ],
   },
   manifest: "/site.webmanifest",
@@ -87,9 +83,9 @@ export const metadata = {
       index: true,
       follow: true,
       noimageindex: false,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   jsonLd: localBusinessSchema,
@@ -101,16 +97,22 @@ export default function RootLayout({ children }) {
       <Head>
         {/* Open Graph */}
         <meta property="og:title" content="Hayta Hukuk ve Danışmanlık" />
-        <meta property="og:description" content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar." />
-        <meta property="og:image" content={`${baseUrl}${logoPath}`} />
+        <meta
+          property="og:description"
+          content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar."
+        />
+        <meta property="og:image" content={`${baseUrl}${ogImagePath}`} /> {/* og_image.png */}
         <meta property="og:url" content={baseUrl} />
         <meta property="og:type" content="website" />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Hayta Hukuk ve Danışmanlık" />
-        <meta name="twitter:description" content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar." />
-        <meta name="twitter:image" content={`${baseUrl}${logoPath}`} />
+        <meta
+          name="twitter:description"
+          content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar."
+        />
+        <meta name="twitter:image" content={`${baseUrl}${ogImagePath}`} /> {/* og_image.png */}
 
         {/* JSON-LD structured data */}
         <script
