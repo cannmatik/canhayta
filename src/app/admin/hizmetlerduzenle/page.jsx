@@ -240,7 +240,7 @@ export default function HizmetlerDuzenle() {
 
         <TextField
           fullWidth
-          label="İkon Seç"
+          label="İkon Seçiniz"
           value={ikon?.name || ""}
           InputProps={{
             readOnly: true,
