@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { supabase } from "@/lib/supabase";
 import {
@@ -8,18 +8,15 @@ import {
   Typography,
   TextField,
   Button,
-  Modal,
-  Grid,
   InputAdornment,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 
-// Örnek import: Sık kullanılan ikonlar
+// Sık kullanılan ikonlar
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-// İkon listesi (modalda sadece DB’de kullanılanlar gösterilecek)
+// İkon listesi
 const ikonList = [
   { name: "Add", Component: AddIcon },
   { name: "Edit", Component: EditIcon },
@@ -29,21 +26,33 @@ const ikonList = [
 // Türkçe karakterleri slug’a dönüştüren fonksiyon
 const toSlug = (text) => {
   const turkishChars = {
-    'İ': 'i','ı': 'i','Ş': 's','ş': 's',
-    'Ğ': 'g','ğ': 'g','Ü': 'u','ü': 'u',
-    'Ö': 'o','ö': 'o','Ç': 'c','ç': 'c',
+    İ: "i",
+    ı: "i",
+    Ş: "s",
+    ş: "s",
+    Ğ: "g",
+    ğ: "g",
+    Ü: "u",
+    ü: "u",
+    Ö: "o",
+    ö: "o",
+    Ç: "c",
+    ç: "c",
   };
   return text
     .toLowerCase()
     .replace(/[İıŞşĞğÜüÖöÇç]/g, (char) => turkishChars[char] || char)
-    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[^a-z0-9\s-]/g, "")
     .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 };
 
 // TipTap editörü (SSR kapalı)
-const RichTextEditor = dynamic(() => import("../../components/RichTextEditor"), { ssr: false });
+const RichTextEditor = dynamic(
+  () => import("../../components/RichTextEditor"),
+  { ssr: false }
+);
 
 export default function HizmetlerDuzenle() {
   const [hizmetler, setHizmetler] = useState([]);
@@ -53,25 +62,15 @@ export default function HizmetlerDuzenle() {
   const [ikon, setIkon] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [status, setStatus] = useState(null);
-  const [openIkonModal, setOpenIkonModal] = useState(false);
-  const [ikonSearch, setIkonSearch] = useState("");
 
   const baseColor = "#6B4E31";
   const accentColor = "#D4A017";
 
-  // DB’deki aktif ikon isimlerini al
-  const activeIcons = useMemo(() => {
-    const usedIconNames = [...new Set(hizmetler.map((h) => h.ikon).filter(Boolean))];
-    return ikonList.filter((icon) => usedIconNames.includes(icon.name));
-  }, [hizmetler]);
-
-  // Arama ile filtreleme
-  const filteredIcons = useMemo(() => {
-    if (!ikonSearch) return activeIcons;
-    return activeIcons.filter((i) =>
-      i.name.toLowerCase().includes(ikonSearch.toLowerCase())
-    );
-  }, [ikonSearch, activeIcons]);
+  // Dinamik component render helper
+  const getIconComponent = (name) => {
+    const found = ikonList.find((i) => i.name === name);
+    return found ? found.Component : null;
+  };
 
   // Hizmetleri çek
   useEffect(() => {
@@ -109,16 +108,36 @@ export default function HizmetlerDuzenle() {
       if (editingId) {
         const { error } = await supabase
           .from("sayfalar")
-          .update({ baslik, icerik_html: icerikHTML, ana_ozet: anaOzet, slug, ikon: ikonName, yayim_tarihi: new Date().toISOString() })
+          .update({
+            baslik,
+            icerik_html: icerikHTML,
+            ana_ozet: anaOzet,
+            slug,
+            ikon: ikonName,
+            yayim_tarihi: new Date().toISOString(),
+          })
           .eq("id", editingId);
 
         if (error) throw error;
         setStatus("Hizmet güncellendi ✅");
-        setHizmetler(hizmetler.map(h => h.id === editingId ? { ...h, baslik, icerik_html: icerikHTML, ana_ozet: anaOzet, slug, ikon: ikonName } : h));
+        setHizmetler(
+          hizmetler.map((h) =>
+            h.id === editingId
+              ? { ...h, baslik, icerik_html: icerikHTML, ana_ozet: anaOzet, slug, ikon: ikonName }
+              : h
+          )
+        );
       } else {
         const { data, error } = await supabase
           .from("sayfalar")
-          .insert({ baslik, icerik_html: icerikHTML, ana_ozet: anaOzet, slug, ikon: ikonName, yayim_tarihi: new Date().toISOString() })
+          .insert({
+            baslik,
+            icerik_html: icerikHTML,
+            ana_ozet: anaOzet,
+            slug,
+            ikon: ikonName,
+            yayim_tarihi: new Date().toISOString(),
+          })
           .select()
           .single();
         if (error) throw error;
@@ -146,7 +165,7 @@ export default function HizmetlerDuzenle() {
     try {
       const { error } = await supabase.from("sayfalar").delete().eq("id", id);
       if (error) throw error;
-      setHizmetler(hizmetler.filter(h => h.id !== id));
+      setHizmetler(hizmetler.filter((h) => h.id !== id));
     } catch (error) {
       setStatus("Hata: " + error.message);
     }
@@ -159,24 +178,6 @@ export default function HizmetlerDuzenle() {
     setAnaOzet("");
     setIkon("");
     setEditingId(null);
-  };
-
-  // Modal aç/kapat
-  const handleOpenIkonModal = () => setOpenIkonModal(true);
-  const handleCloseIkonModal = () => {
-    setOpenIkonModal(false);
-    setIkonSearch("");
-  };
-
-  const handleIkonSelect = (icon) => {
-    setIkon(icon.name);
-    handleCloseIkonModal();
-  };
-
-  // Dinamik component render için helper
-  const getIconComponent = (name) => {
-    const found = ikonList.find(i => i.name === name);
-    return found ? found.Component : null;
   };
 
   return (
@@ -197,19 +198,21 @@ export default function HizmetlerDuzenle() {
 
         <TextField
           fullWidth
-          label="İkon Seç / Yazın (MUI ikon ismi)"
+          label="İkon İsmi (MUI ikon adı)"
           value={ikon}
           InputProps={{
-            readOnly: false,
-            startAdornment: ikon && (() => {
-              const IconComp = getIconComponent(ikon);
-              return IconComp ? <InputAdornment position="start"><IconComp /></InputAdornment> : null;
-            })(),
+            startAdornment: ikon ? (
+              <InputAdornment position="start">
+                {(() => {
+                  const IconComp = getIconComponent(ikon);
+                  return IconComp ? <IconComp /> : null;
+                })()}
+              </InputAdornment>
+            ) : null,
           }}
-          onClick={handleOpenIkonModal}
           onChange={(e) => setIkon(e.target.value)}
           sx={{ mt: 3, bgcolor: "white", borderRadius: 1 }}
-          helperText="Yeni ikon eklemek için https://mui.com/material-ui/material-icons/ adresinden ismini bulup yazabilirsiniz"
+          helperText="İkon ismini https://mui.com/material-ui/material-icons/ adresinden bulabilirsiniz"
         />
 
         <Button type="submit" variant="contained" sx={{ mt: 3, width: "100%", bgcolor: accentColor, color: "#FFF", fontFamily: "'Georgia', serif", "&:hover": { bgcolor: "#B88C14" } }}>
@@ -218,32 +221,6 @@ export default function HizmetlerDuzenle() {
 
         {status && <Typography sx={{ mt: 2, color: baseColor, fontFamily: "'Georgia', serif" }}>{status}</Typography>}
       </Box>
-
-      {/* İkon Modal */}
-      <Modal open={openIkonModal} onClose={handleCloseIkonModal}>
-        <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", bgcolor: "#F9F1E0", p: 4, borderRadius: 2, width: "80%", maxWidth: 800, maxHeight: "80vh", overflowY: "auto", border: `1px solid ${baseColor}20` }}>
-          <TextField
-            fullWidth
-            label="İkon İsmini Yaz"
-            value={ikonSearch}
-            onChange={(e) => setIkonSearch(e.target.value)}
-            InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
-            sx={{ mb: 3, bgcolor: "white", borderRadius: 1 }}
-          />
-          <Grid container spacing={2}>
-            {filteredIcons.map((icon) => (
-              <Grid item xs={3} key={icon.name}>
-                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", p: 1, cursor: "pointer", borderRadius: 1, "&:hover": { bgcolor: `${accentColor}10` } }}
-                  onClick={() => handleIkonSelect(icon)}
-                >
-                  <icon.Component sx={{ fontSize: 40, color: baseColor }} />
-                  <Typography variant="caption" align="center" sx={{ fontFamily: "'Georgia', serif" }}>{icon.name}</Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      </Modal>
 
       {/* Mevcut Hizmetler */}
       <Box sx={{ maxWidth: 800, mx: "auto" }}>
