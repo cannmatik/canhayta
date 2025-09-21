@@ -4,6 +4,7 @@ import "./globals.css";
 import { Montserrat } from "next/font/google";
 import Navbar from "./components/navbar";
 import Footer from "./components/Footer";
+import Head from "next/head";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -11,7 +12,7 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-// The Schema.org markup is moved here
+// Schema.org markup
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LegalService",
@@ -71,7 +72,6 @@ export const metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-  // ⚡️ Add the structured data here
   alternates: {
     canonical: 'https://www.haytahukuk.com.tr',
   },
@@ -88,17 +88,33 @@ export const metadata = {
       'max-snippet': -1,
     },
   },
-  // This is the new way to add structured data
-  // See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#json-ld
   jsonLd: localBusinessSchema,
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="tr">
-      <body
-        className={`${montserrat.variable} min-h-screen flex flex-col bg-[#FDF6E3]`}
-      >
+      <Head>
+        {/* Open Graph */}
+        <meta property="og:title" content="Hayta Hukuk ve Danışmanlık" />
+        <meta property="og:description" content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar." />
+        <meta property="og:image" content="https://www.haytahukuk.com.tr/og-image.jpg" />
+        <meta property="og:url" content="https://www.haytahukuk.com.tr" />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Hayta Hukuk ve Danışmanlık" />
+        <meta name="twitter:description" content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar." />
+        <meta name="twitter:image" content="https://www.haytahukuk.com.tr/og-image.jpg" />
+
+        {/* JSON-LD structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+      </Head>
+      <body className={`${montserrat.variable} min-h-screen flex flex-col bg-[#FDF6E3]`}>
         <Navbar />
         <main className="flex-grow">{children}</main>
         <Footer />
