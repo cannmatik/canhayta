@@ -62,8 +62,8 @@ export default function HizmetlerListesi() {
           sx={{
             color: baseColor,
             mb: 6,
-            fontWeight: 600,
-            fontFamily: "'Georgia', serif",
+            fontWeight: 700,
+            fontFamily: "'Montserrat', sans-serif",
             letterSpacing: 0.5,
             textTransform: "uppercase",
           }}
@@ -76,7 +76,7 @@ export default function HizmetlerListesi() {
             variant="body1"
             color={baseColor}
             align="center"
-            sx={{ fontFamily: "'Georgia', serif" }}
+            sx={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}
           >
             Yükleniyor...
           </Typography>
@@ -85,7 +85,7 @@ export default function HizmetlerListesi() {
             variant="body1"
             color={baseColor}
             align="center"
-            sx={{ fontFamily: "'Georgia', serif" }}
+            sx={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}
           >
             Hizmet bulunamadı.
           </Typography>
@@ -110,9 +110,7 @@ export default function HizmetlerListesi() {
                     transition: "all 0.3s ease",
                     "&:hover": {
                       bgcolor: `${accentColor}10`,
-                      "& svg": {
-                        color: accentColor,
-                      },
+                      "& svg": { color: accentColor },
                     },
                     textDecoration: "none",
                   }}
@@ -133,8 +131,8 @@ export default function HizmetlerListesi() {
                         variant={isMobile ? "h6" : "h5"}
                         sx={{
                           color: baseColor,
-                          fontWeight: 500,
-                          fontFamily: "'Georgia', serif",
+                          fontWeight: 700,
+                          fontFamily: "'Montserrat', sans-serif",
                         }}
                       >
                         {hizmet.baslik}
@@ -147,7 +145,7 @@ export default function HizmetlerListesi() {
                           color: baseColor,
                           opacity: 0.7,
                           mt: 0.5,
-                          fontFamily: "'Georgia', serif",
+                          fontFamily: "'Montserrat', sans-serif",
                           maxWidth: "90%",
                         }}
                       >

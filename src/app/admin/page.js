@@ -57,6 +57,7 @@ export default function AdminPage() {
     borderRadius: 12,
     padding: 3,
     textAlign: "center",
+    width: 280,
     background: "linear-gradient(135deg, #FDF6E3 0%, #F9F1E0 100%)",
     border: `1px solid #6B4E3120`,
     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
@@ -78,6 +79,45 @@ export default function AdminPage() {
     transition: "color 0.3s ease",
   };
 
+  const cards = [
+    {
+      icon: AddCircleIcon,
+      title: "Makale Ekle",
+      desc: "Yeni makaleler oluştur ve siteye ekle.",
+      path: "/admin/makale-ekle",
+    },
+    {
+      icon: ContactMailIcon,
+      title: "Mesajlar",
+      desc: "Gönderilen iletişim mesajlarını görüntüle ve sil.",
+      path: "/admin/iletisim-mesajlari",
+    },
+    {
+      icon: ArticleIcon,
+      title: "Tüm Makaleler",
+      desc: "Mevcut makaleleri görüntüle ve düzenle.",
+      path: "/admin/makaleler",
+    },
+    {
+      icon: InfoIcon,
+      title: "Hakkında Sayfası",
+      desc: "Site hakkında içeriği görüntüle ve düzenle.",
+      path: "/admin/hakkinda",
+    },
+    {
+      icon: ContactMailIcon,
+      title: "İletişim Sayfası",
+      desc: "İletişim sayfası içeriğini görüntüle ve düzenle.",
+      path: "/admin/contact",
+    },
+    {
+      icon: WorkIcon,
+      title: "Hizmetleri Düzenle",
+      desc: "Hizmetleri ekle, düzenle veya sil.",
+      path: "/admin/hizmetlerduzenle",
+    },
+  ];
+
   return (
     <Box
       sx={{
@@ -86,7 +126,7 @@ export default function AdminPage() {
         pt: 10,
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Typography
           variant="h3"
           align="center"
@@ -112,132 +152,58 @@ export default function AdminPage() {
           Hoş geldin, <strong>{user.email}</strong>
         </Typography>
 
-        <Grid container spacing={4} justifyContent="center">
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/makale-ekle")}>
-              <CardContent>
-                <AddCircleIcon sx={iconStyle} />
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
+        <Grid
+          container
+          spacing={4}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "stretch",
+          }}
+        >
+          {cards.map((card) => (
+            <Grid
+              item
+              key={card.title}
+              sx={{ display: "flex", justifyContent: "center" }}
+            >
+              <Card
+                sx={cardStyle}
+                onClick={() => router.push(card.path)}
+              >
+                <CardContent
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
                 >
-                  Makale Ekle
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
-                >
-                  Yeni makaleler oluştur ve siteye ekle.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-  <Card sx={cardStyle} onClick={() => router.push("/admin/iletisim-mesajlari")}>
-    <CardContent>
-      <ContactMailIcon sx={iconStyle} />
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
-      >
-        Mesajlar
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
-      >
-        Gönderilen iletişim mesajlarını görüntüle ve sil.
-      </Typography>
-    </CardContent>
-  </Card>
-</Grid>
-
-
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/makaleler")}>
-              <CardContent>
-                <ArticleIcon sx={iconStyle} />
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
-                >
-                  Tüm Makaleler
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
-                >
-                  Mevcut makaleleri görüntüle ve düzenle.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/hakkinda")}>
-              <CardContent>
-                <InfoIcon sx={iconStyle} />
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
-                >
-                  Hakkında Sayfası
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
-                >
-                  Site hakkında içeriği görüntüle ve düzenle.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/contact")}>
-              <CardContent>
-                <ContactMailIcon sx={iconStyle} />
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
-                >
-                  İletişim Sayfası
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
-                >
-                  İletişim sayfası içeriğini görüntüle ve düzenle.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Card sx={cardStyle} onClick={() => router.push("/admin/hizmetlerduzenle")}>
-              <CardContent>
-                <WorkIcon sx={iconStyle} />
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
-                >
-                  Hizmetleri Düzenle
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
-                >
-                  Hizmetleri ekle, düzenle veya sil.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+                  <card.icon sx={iconStyle} />
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{
+                      fontFamily: "'Georgia', serif",
+                      color: "#6B4E31",
+                    }}
+                  >
+                    {card.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: "'Georgia', serif",
+                      color: "#6B4E31",
+                      opacity: 0.7,
+                      textAlign: "center",
+                    }}
+                  >
+                    {card.desc}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
       </Container>
     </Box>

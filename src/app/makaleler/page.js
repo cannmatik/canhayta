@@ -65,7 +65,6 @@ export default function Makaleler() {
     setItemsPerPage(isMobileQuery ? 6 : 9);
   }, [isMobileQuery]);
 
-  // Makale, tür ve yazar verilerini çek
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -101,7 +100,6 @@ export default function Makaleler() {
     fetchData();
   }, []);
 
-  // Filtreleme ve arama
   useEffect(() => {
     const filtered = makaleler.filter((makale) => {
       const matchesSearch =
@@ -126,14 +124,16 @@ export default function Makaleler() {
   const endIndex = startIndex + itemsPerPage;
   const currentMakaleler = filteredMakaleler.slice(startIndex, endIndex);
 
-  const handlePageChange = (event, page) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = (event, page) => setCurrentPage(page);
 
   if (loading) {
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
-        <Typography variant="h6" color={baseColor}>
+        <Typography
+          variant="h6"
+          color={baseColor}
+          sx={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}
+        >
           Yükleniyor...
         </Typography>
       </Box>
@@ -157,7 +157,7 @@ export default function Makaleler() {
           align="center"
           gutterBottom
           color={baseColor}
-          sx={{ mb: 4, width: "100%" }}
+          sx={{ mb: 4, width: "100%", fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}
         >
           Makaleler
         </Typography>
@@ -227,7 +227,12 @@ export default function Makaleler() {
         {/* Makale Kartları */}
         <Box sx={{ width: "100%" }}>
           {currentMakaleler.length === 0 ? (
-            <Typography variant="body1" color={baseColor} align="center">
+            <Typography
+              variant="body1"
+              color={baseColor}
+              align="center"
+              sx={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}
+            >
               Arama kriterlerinize uygun makale bulunamadı.
             </Typography>
           ) : (
@@ -252,19 +257,40 @@ export default function Makaleler() {
                     />
                   )}
                   <CardContent sx={{ p: 1, "&:last-child": { pb: 2 } }}>
-                    <Typography gutterBottom variant="h6">
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      sx={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}
+                    >
                       {makale.baslik}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      {makale.ozet?.substring(0, 100) + (makale.ozet?.length > 100 ? "..." : "") || "Özet mevcut değil."}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2, fontFamily: "'Montserrat', sans-serif" }}
+                    >
+                      {makale.ozet?.substring(0, 100) +
+                        (makale.ozet?.length > 100 ? "..." : "") || "Özet mevcut değil."}
                     </Typography>
-                    <Typography variant="caption" color={baseColor} sx={{ display: "block" }}>
+                    <Typography
+                      variant="caption"
+                      color={baseColor}
+                      sx={{ display: "block", fontFamily: "'Montserrat', sans-serif" }}
+                    >
                       Yazar: {makale.yazarlar?.ad || ""} {makale.yazarlar?.soyad || ""}
                     </Typography>
-                    <Typography variant="caption" color={baseColor} sx={{ display: "block" }}>
+                    <Typography
+                      variant="caption"
+                      color={baseColor}
+                      sx={{ display: "block", fontFamily: "'Montserrat', sans-serif" }}
+                    >
                       Tür: {makale.makale_turleri?.["Tur"] || "Bilinmiyor"}
                     </Typography>
-                    <Typography variant="caption" color={baseColor} sx={{ display: "block", mt: 0.5 }}>
+                    <Typography
+                      variant="caption"
+                      color={baseColor}
+                      sx={{ display: "block", mt: 0.5, fontFamily: "'Montserrat', sans-serif" }}
+                    >
                       Yayın: {new Date(makale.yayim_tarihi).toLocaleDateString("tr-TR")}
                     </Typography>
                   </CardContent>

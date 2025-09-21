@@ -254,31 +254,42 @@ export default function ContactPage() {
         {pageData.google_maps_link && (
           <Box
             sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
               mt: 8,
-              textAlign: "center",
-              borderRadius: 2,
-              py: 6,
-              background: "linear-gradient(180deg, #FDF6E3 0%, #F9F1E0 100%)",
-              boxShadow: "0 6px 18px rgba(0,0,0,0.07)",
             }}
           >
-            <Typography variant={isMobile ? "h5" : "h4"} gutterBottom color={baseColor} sx={{ fontWeight: 700 }}>
-              Ofisimizin Konumu
-            </Typography>
             <Box
               sx={{
+                width: "100%",
+                maxWidth: 800,
                 borderRadius: 2,
                 overflow: "hidden",
                 boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
-                width: "100%",
-                maxWidth: 800,
-                mx: "auto",
               }}
             >
-              <div
-                dangerouslySetInnerHTML={{ __html: pageData.google_maps_link }}
-                style={{ width: "100%", height: isMobile ? 250 : 450 }}
-              />
+              <Box
+                sx={{
+                  width: "100%",
+                  position: "relative",
+                  paddingTop: isMobile ? "35%" : "56.25%", // 16:9 oranı
+                }}
+              >
+                <iframe
+                  src={pageData.google_maps_link.match(/src="([^"]+)"/)[1]}
+                  style={{
+                    border: 0,
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                  }}
+                  allowFullScreen
+                  loading="lazy"
+                ></iframe>
+              </Box>
             </Box>
           </Box>
         )}
