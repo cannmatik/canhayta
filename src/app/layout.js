@@ -12,12 +12,16 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+// Dinamik olarak public klasöründen resim URL'si
+const baseUrl = "https://canhayta.vercel.app"; // canlı site URL'si
+const logoPath = "/logo.png"; // public klasöründeki logo
+
 // Schema.org markup
 const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LegalService",
   "name": "Hayta Hukuk ve Danışmanlık",
-  "image": "https://www.haytahukuk.com.tr/logo.png",
+  "image": `${baseUrl}${logoPath}`,
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Örnek Mah. Örnek Cad. No: 123",
@@ -27,7 +31,7 @@ const localBusinessSchema = {
     "addressCountry": "TR"
   },
   "telephone": "+902121234567",
-  "url": "https://www.haytahukuk.com.tr",
+  "url": baseUrl,
   "openingHoursSpecification": {
     "@type": "OpeningHoursSpecification",
     "dayOfWeek": [
@@ -50,11 +54,11 @@ export const metadata = {
   openGraph: {
     title: 'Hayta Hukuk ve Danışmanlık',
     description: 'Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar.',
-    url: 'https://www.haytahukuk.com.tr',
+    url: baseUrl,
     siteName: 'Hayta Hukuk ve Danışmanlık',
     images: [
       {
-        url: 'https://www.haytahukuk.com.tr/og-image.jpg',
+        url: `${baseUrl}${logoPath}`,
         width: 1200,
         height: 630,
         alt: 'Hayta Hukuk ve Danışmanlık Logosu',
@@ -73,7 +77,7 @@ export const metadata = {
   },
   manifest: "/site.webmanifest",
   alternates: {
-    canonical: 'https://www.haytahukuk.com.tr',
+    canonical: baseUrl,
   },
   robots: {
     index: true,
@@ -98,15 +102,15 @@ export default function RootLayout({ children }) {
         {/* Open Graph */}
         <meta property="og:title" content="Hayta Hukuk ve Danışmanlık" />
         <meta property="og:description" content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar." />
-        <meta property="og:image" content="https://www.haytahukuk.com.tr/og-image.jpg" />
-        <meta property="og:url" content="https://www.haytahukuk.com.tr" />
+        <meta property="og:image" content={`${baseUrl}${logoPath}`} />
+        <meta property="og:url" content={baseUrl} />
         <meta property="og:type" content="website" />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Hayta Hukuk ve Danışmanlık" />
         <meta name="twitter:description" content="Hayta Hukuk, müvekkillerine güvenilir ve etkili hukuki çözümler sunar." />
-        <meta name="twitter:image" content="https://www.haytahukuk.com.tr/og-image.jpg" />
+        <meta name="twitter:image" content={`${baseUrl}${logoPath}`} />
 
         {/* JSON-LD structured data */}
         <script
