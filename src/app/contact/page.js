@@ -6,10 +6,11 @@ import {
   Box,
   Container,
   Typography,
-  Grid,
   Card,
   CardContent,
   Button,
+  TextField,
+  Alert,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -17,7 +18,6 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import PhoneIcon from "@mui/icons-material/Phone";
 import BusinessIcon from "@mui/icons-material/Business";
 
-// Hero component
 function Hero() {
   return (
     <section
@@ -38,219 +38,251 @@ export default function ContactPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [pageData, setPageData] = useState(null);
-  const [error, setError] = useState(null);
+  const [form, setForm] = useState({
+    ad_soyad: "",
+    email: "",
+    telefon: "",
+    konu: "",
+    mesaj: "",
+  });
+  const [formStatus, setFormStatus] = useState({ success: null, message: "" });
 
   const baseColor = "#6B4E31";
   const accentColor = "#D4A017";
 
   const cardSx = {
-    maxWidth: 345,
+    width: "100%",
+    maxWidth: 800,
     mx: "auto",
+    minHeight: 300,
     backgroundColor: "#F5E8B7",
     color: baseColor,
     textAlign: "center",
     borderRadius: 12,
-    p: 2.5,
+    p: 4,
     boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
-    transition: "transform 220ms ease, box-shadow 220ms ease",
-    cursor: "pointer",
-    "&:hover": {
-      transform: "translateY(-6px)",
-      boxShadow: "0 14px 32px rgba(107,78,49,0.22)",
-    },
-    "&:hover svg": {
-      color: accentColor,
-      transform: "scale(1.06)",
-    },
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 2,
   };
 
-  const iconSx = {
-    fontSize: 60,
-    mb: 2,
-    color: baseColor,
-    transition: "color 200ms ease, transform 200ms ease",
+  const iconSx = { fontSize: 50, mb: 2, color: baseColor };
+  const buttonSx = {
+    backgroundColor: accentColor,
+    color: "#fff",
+    width: "100%",
+    py: 1.5,
+    mb: 1,
+    "&:hover": { backgroundColor: "#b58900" },
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 1,
+    textTransform: "none",
+    fontSize: 16,
+    borderRadius: 2,
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("sayfalar")
-          .select("*")
-          .eq("slug", "contact")
-          .single();
-        if (error) {
-          console.error("Supabase error:", error);
-          setError("Veri yüklenirken bir hata oluştu.");
-          return;
-        }
-        setPageData(data);
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        setError("Beklenmedik bir hata oluştu.");
-      }
+      const { data } = await supabase.from("sayfalar").select("*").eq("slug", "contact").single();
+      setPageData(data);
     };
     fetchData();
   }, []);
 
-  if (error) {
-    return <p style={{ textAlign: "center", marginTop: 50 }}>{error}</p>;
-  }
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  if (!pageData) {
-    return <p style={{ textAlign: "center", marginTop: 50 }}>Yükleniyor...</p>;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormStatus({ success: null, message: "" });
 
-  // WhatsApp link revize edildi
+    if (!form.ad_soyad || !form.email || !form.mesaj || form.mesaj.length < 10) {
+      setFormStatus({
+        success: false,
+        message: "Lütfen tüm zorunlu alanları doldurun ve mesaj en az 10 karakter olsun.",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("iletisim_mesajlari").insert([
+        {
+          ad_soyad: form.ad_soyad,
+          email: form.email,
+          telefon: form.telefon,
+          konu: form.konu,
+          mesaj: form.mesaj,
+          ip: "",
+          user_agent: navigator.userAgent,
+        },
+      ]);
+      if (error) throw error;
+      setFormStatus({ success: true, message: "Mesajınız başarıyla gönderildi!" });
+      setForm({ ad_soyad: "", email: "", telefon: "", konu: "", mesaj: "" });
+    } catch (err) {
+      console.error(err);
+      setFormStatus({ success: false, message: "Mesaj gönderilirken hata oluştu." });
+    }
+  };
+
+  if (!pageData) return <p style={{ textAlign: "center", marginTop: 50 }}>Yükleniyor...</p>;
+
   const whatsappLink = pageData.whatsapp
     ? `https://wa.me/${pageData.whatsapp.replace(/\D/g, "")}`
     : null;
 
   return (
     <Box component="main" sx={{ width: "100%", overflowX: "hidden" }}>
-      {/* Hero Bölümü */}
       <Hero />
 
-      {/* İletişim Bilgileri Bölümü */}
-      <Box sx={{ width: "100%", bgcolor: "#FDF6E3" }}>
-        <Container
-          maxWidth={false}
-          disableGutters
-          sx={{
-            py: isMobile ? 4 : 8,
-            px: 0,
-            mx: 0,
-            textAlign: "center",
-          }}
-        >
-          <Typography
-            variant={isMobile ? "h5" : "h4"}
-            align="center"
-            gutterBottom
-            color={baseColor}
-            sx={{ mx: "auto", maxWidth: "90%", mb: isMobile ? 2 : 4 }}
-          >
-            Bize Ulaşın
-          </Typography>
-
-          <div
-            dangerouslySetInnerHTML={{ __html: pageData.icerik_html }}
-            style={{ color: baseColor, marginBottom: isMobile ? 20 : 30, fontSize: isMobile ? 15 : 16 }}
-          />
-
-          <Grid
-            container
-            spacing={isMobile ? 2 : 4}
-            sx={{ mt: isMobile ? 2 : 4, justifyContent: "center", width: "100%", m: 0 }}
-          >
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        {/* Tek Kartta İletişim Bilgileri */}
+        <Card sx={cardSx}>
+          <CardContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+            <BusinessIcon sx={iconSx} />
+            <Typography variant="h5" gutterBottom>
+              Bize Ulaşın
+            </Typography>
             {pageData.adres && (
-              <Grid item xs={12} sm={6} md={4}>
-                <Card sx={cardSx}>
-                  <CardContent>
-                    <BusinessIcon sx={iconSx} />
-                    <Typography gutterBottom variant="h5" component="div">
-                      Adres
-                    </Typography>
-                    <Typography variant="body2">{pageData.adres}</Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <Typography variant="body1" sx={{ textAlign: "center", mb: 1 }}>
+                {pageData.adres}
+              </Typography>
             )}
 
             {pageData.telefon && (
-              <Grid item xs={12} sm={6} md={4}>
-                <Card sx={cardSx}>
-                  <CardContent>
-                    <PhoneIcon sx={iconSx} />
-                    <Typography gutterBottom variant="h5" component="div">
-                      Telefon
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      color="inherit"
-                      sx={{
-                        color: baseColor,
-                        borderColor: baseColor,
-                        "&:hover": { borderColor: accentColor, color: accentColor },
-                        mt: 1,
-                      }}
-                      onClick={() => window.open(`tel:${pageData.telefon}`)}
-                    >
-                      {pageData.telefon}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <Button
+                component="a"
+                href={`tel:${pageData.telefon.replace(/\s/g, "")}`}
+                sx={buttonSx}
+                startIcon={<PhoneIcon />}
+              >
+                {pageData.telefon}
+              </Button>
             )}
 
             {whatsappLink && (
-              <Grid item xs={12} sm={6} md={4}>
-                <Card sx={cardSx}>
-                  <CardContent>
-                    <WhatsAppIcon sx={iconSx} />
-                    <Typography gutterBottom variant="h5" component="div">
-                      WhatsApp
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      sx={{
-                        backgroundColor: accentColor,
-                        "&:hover": { backgroundColor: "#b58900" },
-                        color: "#fff",
-                        mt: 1,
-                      }}
-                      component="a"
-                      href={whatsappLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Mesaj Gönder
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <Button
+                component="a"
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={buttonSx}
+                startIcon={<WhatsAppIcon />}
+              >
+                WhatsApp Mesaj Gönder
+              </Button>
             )}
-          </Grid>
+          </CardContent>
+        </Card>
 
-          {/* Google Maps Bölümü */}
-          {pageData.google_maps_link && (
+        {/* İletişim Formu */}
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h5" gutterBottom color={baseColor}>
+            İletişim Formu
+          </Typography>
+
+          {formStatus.message && (
+            <Alert severity={formStatus.success ? "success" : "error"} sx={{ mb: 3 }}>
+              {formStatus.message}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              label="Ad Soyad *"
+              name="ad_soyad"
+              value={form.ad_soyad}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Email *"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Telefon"
+              name="telefon"
+              value={form.telefon}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Konu"
+              name="konu"
+              value={form.konu}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Mesaj *"
+              name="mesaj"
+              multiline
+              rows={4}
+              value={form.mesaj}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                backgroundColor: accentColor,
+                color: "#fff",
+                "&:hover": { backgroundColor: "#b58900" },
+                width: isMobile ? "100%" : "auto",
+              }}
+              size="large"
+            >
+              Gönder
+            </Button>
+          </form>
+        </Box>
+
+        {/* Google Maps */}
+        {pageData.google_maps_link && (
+          <Box
+            sx={{
+              mt: 8,
+              textAlign: "center",
+              borderRadius: 2,
+              py: 6,
+              background: "linear-gradient(180deg, #FDF6E3 0%, #F9F1E0 100%)",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.07)",
+            }}
+          >
+            <Typography variant={isMobile ? "h5" : "h4"} gutterBottom color={baseColor} sx={{ fontWeight: 700 }}>
+              Ofisimizin Konumu
+            </Typography>
             <Box
               sx={{
-                mt: isMobile ? 6 : 10,
-                textAlign: "center",
-                px: isMobile ? 3 : 6,
-                py: 6,
                 borderRadius: 2,
-                background: "linear-gradient(180deg, #FDF6E3 0%, #F9F1E0 100%)",
-                boxShadow: "0 6px 18px rgba(0,0,0,0.07)",
+                overflow: "hidden",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
+                width: "100%",
+                maxWidth: 800,
+                mx: "auto",
               }}
             >
-              <Typography
-                variant={isMobile ? "h5" : "h4"}
-                gutterBottom
-                color={baseColor}
-                sx={{ mx: "auto", maxWidth: "90%", mb: 3, fontWeight: 700 }}
-              >
-                Ofisimizin Konumu
-              </Typography>
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  boxShadow: "0 6px 18px rgba(0,0,0,0.1)",
-                  maxWidth: isMobile ? "100%" : "800px",
-                  mx: "auto",
-                }}
-              >
-                <div
-                  dangerouslySetInnerHTML={{ __html: pageData.google_maps_link }}
-                  style={{ width: "100%", height: isMobile ? "250px" : "450px" }}
-                />
-              </Box>
+              <div
+                dangerouslySetInnerHTML={{ __html: pageData.google_maps_link }}
+                style={{ width: "100%", height: isMobile ? 250 : 450 }}
+              />
             </Box>
-          )}
-        </Container>
-      </Box>
+          </Box>
+        )}
+      </Container>
     </Box>
   );
 }

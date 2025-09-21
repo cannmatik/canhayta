@@ -133,6 +133,27 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </Grid>
+          <Grid item xs={12} sm={6}>
+  <Card sx={cardStyle} onClick={() => router.push("/admin/iletisim-mesajlari")}>
+    <CardContent>
+      <ContactMailIcon sx={iconStyle} />
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31" }}
+      >
+        Mesajlar
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{ fontFamily: "'Georgia', serif", color: "#6B4E31", opacity: 0.7 }}
+      >
+        Gönderilen iletişim mesajlarını görüntüle ve sil.
+      </Typography>
+    </CardContent>
+  </Card>
+</Grid>
+
 
           <Grid item xs={12} sm={6}>
             <Card sx={cardStyle} onClick={() => router.push("/admin/makaleler")}>
